@@ -1,12 +1,18 @@
-# Don't Remove Credit @VJ_Bots
+# Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
 class script(object):
-    START_TXT = """<b><blockquote>ʜᴇʟʟᴏ {} 👋,</blockquote>
-    
-ɪ ᴀᴍ ʟᴀᴛᴇꜱᴛ ᴀᴅᴠᴀɴᴄᴇᴅ ᴀɴᴅ ᴘᴏᴡᴇʀꜰᴜʟ ᴀᴜᴛᴏ ꜰɪʟᴛᴇʀ ʙᴏᴛ. ʏᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴛᴏ ᴇᴀʀɴ ᴜɴʟɪᴍɪᴛᴇᴅ ᴍᴏɴᴇʏ...💸</b>"""
+    START_TXT = """
+<b>👋 Welcome {},</b>
 
+<b>🚀 I am a powerful and super fast Auto-Filter Bot, made for your groups!</b>
+
+✨ Just type the **Movie, Series, or Anime** name you want.
+I will automatically filter the file for you instantly!
+
+👥 I work perfectly in **Groups** and in **Private Chats** too.
+"""
     CLONE_START_TXT = """<b><blockquote>ʜᴇʟʟᴏ {}, ᴍʏ ɴᴀᴍᴇ <a href=https://t.me/{}>{}</a></blockquote>
     
 ɪ ᴀᴍ ᴀᴅᴠᴀɴᴄᴇ ᴀɴᴅ ᴘᴏᴡᴇʀғᴜʟʟ ᴀᴜᴛᴏғɪʟᴛᴇʀ ʙᴏᴛ ᴡɪᴛʜ ᴀᴍᴀᴢɪɴɢ ғᴇᴀᴛᴜʀᴇs ᴊᴜsᴛ ᴛʏᴘᴇ ᴡʜᴀᴛ ʏᴏᴜ ᴡᴀɴᴛ ᴛʜᴇɴ sᴇᴇ ᴍʏ ᴘᴏᴡᴇʀ 💘</b>"""
@@ -64,7 +70,7 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
 • /del - <code>ᴅᴇʟᴇᴛᴇ ᴀ ꜱᴘᴇᴄɪꜰɪᴄ ꜰɪʟᴛᴇʀ ɪɴ ᴀ ᴄʜᴀᴛ</code>
 • /delall - <code>ᴅᴇʟᴇᴛᴇ ᴛʜᴇ ᴡʜᴏʟᴇ ꜰɪʟᴛᴇʀꜱ ɪɴ ᴀ ᴄʜᴀᴛ (ᴄʜᴀᴛ ᴏᴡɴᴇʀ ᴏɴʟʏ)</code>"""
 
-    # Don't Remove Credit @VJ_Bots
+    # Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
@@ -75,7 +81,7 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
 2. ᴛʜɪꜱ ʙᴏᴛ ꜱᴜᴘᴘᴏʀᴛꜱ ʙᴜᴛᴛᴏɴꜱ ᴡɪᴛʜ ᴀɴʏ ᴛᴇʟᴇɢʀᴀᴍ ᴍᴇᴅɪᴀ ᴛʏᴘᴇ.
 3. ʙᴜᴛᴛᴏɴꜱ ꜱʜᴏᴜʟᴅ ʙᴇ ᴘʀᴏᴘᴇʀʟʏ ᴘᴀʀꜱᴇᴅ ᴀꜱ ᴍᴀʀᴋᴅᴏᴡɴ ꜰᴏʀᴍᴀᴛ
 <b>ᴜʀʟ ʙᴜᴛᴛᴏɴꜱ:</b>
-<code>[Button Text](buttonurl:https://t.me/vj_bots/3)</code>
+<code>[Button Text](buttonurl:https://t.me/vjupdates2/3)</code>
 <b>ᴀʟᴇʀᴛ ʙᴜᴛᴛᴏɴꜱ:</b>
 <code>[Button Text](buttonalert:ᴛʜɪꜱ ɪꜱ ᴀɴ ᴀʟᴇʀᴛ ᴍᴇꜱꜱᴀɢᴇ)</code>"""
 
@@ -101,7 +107,7 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
 • /disconnect  - <code>ᴅɪꜱᴄᴏɴɴᴇᴄᴛ ꜰʀᴏᴍ ᴀ ᴄʜᴀᴛ</code>
 • /connections - <code>ʟɪꜱᴛ ᴀʟʟ ʏᴏᴜʀ ᴄᴏɴɴᴇᴄᴛɪᴏɴꜱ</code>"""
 
-    # Don't Remove Credit @VJ_Bots
+    # Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
@@ -111,8 +117,7 @@ Cᴏᴍᴍᴀɴᴅs Aɴᴅ Usᴀɢᴇ:
   
  <b>✯ Join here : <a href={}>Update Channel</a></b> 
   
- ./id - <code>ɢᴇᴛ ɪᴅ ᴏꜰ ᴀ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴜꜱᴇʀ.</ 
- code> 
+ ./id - <code>ɢᴇᴛ ɪᴅ ᴏꜰ ᴀ ꜱᴘᴇᴄɪꜰɪᴇᴅ ᴜꜱᴇʀ.</code> 
   
  ./info  - <code>ɢᴇᴛ ɪɴꜰᴏʀᴍᴀᴛɪᴏɴ ᴀʙᴏᴜᴛ ᴀ ᴜꜱᴇʀ.</code> 
   
@@ -193,29 +198,41 @@ Nᴀᴍᴇ - {}"""
 ʏᴏᴜ ᴀʀᴇ ᴜꜱɪɴɢ ᴏɴᴇ ᴏꜰ ᴍʏ ᴏʟᴅ ᴍᴇꜱꜱᴀɢᴇꜱ, 
 ᴘʟᴇᴀꜱᴇ ꜱᴇɴᴅ ᴛʜᴇ ʀᴇQᴜᴇꜱᴛ ᴀɢᴀɪɴ."""
 
-    CUDNT_FND = """ɪ ᴄᴏᴜʟᴅɴ'ᴛ ꜰɪɴᴅ ᴀɴʏᴛʜɪɴɢ ʀᴇʟᴀᴛᴇᴅ ᴛᴏ {}
-ᴅɪᴅ ʏᴏᴜ ᴍᴇᴀɴ ᴀɴʏ ᴏɴᴇ ᴏꜰ ᴛʜᴇꜱᴇ?"""
+    CUDNT_FND = """<b>
+🥺 ᴍᴇʀɪ ʙʜᴀɪ/ʙʜᴀɴ, ᴄʜɪɴᴛᴀ ᴍᴛ ᴋᴀʀᴏ! (ᴅᴏɴ'ᴛ ᴡᴏʀʀy ᴍy ʙʀᴏ/ꜱɪꜱ!) 🥺
 
-    I_CUDNT = """<b>sᴏʀʀʏ ɴᴏ ꜰɪʟᴇs ᴡᴇʀᴇ ꜰᴏᴜɴᴅ ꜰᴏʀ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛ {} 😕
+ɪ ᴄᴏᴜʟᴅɴ'ᴛ ꜰɪɴᴅ ᴀɴy ᴍᴏᴠɪᴇ ʀᴇʟᴀᴛᴇᴅ ᴛᴏ <u>{}</u>.
 
-ᴄʜᴇᴄᴋ ʏᴏᴜʀ sᴘᴇʟʟɪɴɢ ɪɴ ɢᴏᴏɢʟᴇ ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ 😃
+👉 ᴀᴩᴋɪ ꜱᴩᴇʟʟɪɴɢ ɢᴀʟᴀᴛ ʜᴏ ꜱᴋᴛɪ ʜᴀɪ. ᴋʀɪᴩʏᴀ ɴɪᴄʜᴇ ᴅɪʏᴇ ɢᴀʏᴇ ɴᴀᴍᴏ ꜱᴇ ᴄʜᴇᴄᴋ ᴋʀ ᴋᴇ ꜰɪʀ ꜱᴇ ʙʜᴇᴊᴇ.
+👉 yᴏᴜʀ ꜱᴩᴇʟʟɪɴɢ ᴍɪɢʜᴛ ʙᴇ ᴡʀᴏɴɢ. ᴩʟᴇᴀꜱᴇ ᴄʜᴇᴄᴋ ʙy ᴜꜱɪɴɢ ᴛʜᴇ ɴᴀᴍᴇꜱ ꜰʀᴏᴍ ᴛʜᴇ ʟɪꜱᴛ ʙᴇʟᴏᴡ:
+</b>"""
 
-ᴍᴏᴠɪᴇ ʀᴇǫᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ 👇
+    I_CUDNT = """
+<b>😔 Sᴏʀʀʏ! Nᴏ ꜰɪʟᴇs ᴡᴇʀᴇ ꜰᴏᴜɴᴅ ꜰᴏʀ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛ: {}</b>
 
-ᴇxᴀᴍᴘʟᴇ : Uncharted or Uncharted 2022 or Uncharted En
+**🇮🇳 (Hindi) 🇮🇳**
+फ़ाइल नहीं मिली! कृपया अपनी **स्पेलिंग** Google पर चेक करें और दोबारा कोशिश करें।
+अगर फिर भी फ़ाइल न मिले, तो **#request** करके मांग सकते हैं:
+➡️ **#request (फ़िल्म/सीरीज़ का नाम)**
 
-ꜱᴇʀɪᴇꜱ ʀᴇǫᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ 👇
+**🇬🇧 (English) 🇬🇧**
+No file found! Please **check your spelling** on Google and try again.
+If you still can't find it, you can **#request** it:
+➡️ **#request (movie/series name)**
 
-ᴇxᴀᴍᴘʟᴇ : Loki S01 or Loki S01E04 or Lucifer S03E24
+**💡 Fᴏʀᴍᴀᴛ Eample:**
+🔸 **Movie:** Uncharted or Uncharted 2022
+🔸 **Series:** Loki S01 or Loki S01E04
 
-🚯 ᴅᴏɴᴛ ᴜꜱᴇ ➠ ':(!,./)</b>"""
+🚫 **Dᴏɴ'ᴛ Uꜱᴇ:** `':(!,./)`
+"""
 
     I_CUD_NT = """ɪ ᴄᴏᴜʟᴅɴ'ᴛ ꜰɪɴᴅ ᴀɴʏ ᴍᴏᴠɪᴇ ʀᴇʟᴀᴛᴇᴅ ᴛᴏ {}.
 ᴘʟᴇᴀꜱᴇ ᴄʜᴇᴄᴋ ᴛʜᴇ ꜱᴘᴇʟʟɪɴɢ ᴏɴ ɢᴏᴏɢʟᴇ ᴏʀ ɪᴍᴅʙ..."""
 
     MVE_NT_FND = """ᴍᴏᴠɪᴇ ɴᴏᴛ ꜰᴏᴜɴᴅ ɪɴ ᴅᴀᴛᴀʙᴀꜱᴇ..."""
 
-    TOP_ALRT_MSG = """Cʜᴇᴄᴋɪɴɢ Fᴏʀ Mᴏᴠɪᴇ Iɴ Dᴀᴛᴀʙᴀsᴇ..."""
+    TOP_ALRT_MSG = """Cʜᴇᴄᴋɪɴɢ Fᴏʀ Mᴏᴠɪᴇ Iɴ Dᴀᴛᴀʙsᴇ..."""
 
     MELCOW_ENG = """<b>Hᴇʟʟᴏ {} 😍, Aɴᴅ Wᴇʟᴄᴏᴍᴇ Tᴏ {} Gʀᴏᴜᴘ ❤️</b>"""
 
@@ -238,15 +255,14 @@ Nᴀᴍᴇ - {}"""
     NORSLTS = """ 
 ★ #𝗡𝗼𝗥𝗲𝘀𝘂𝗹𝘁𝘀 ★
 
-𝗜𝗗 <b>: {}</b>
+𝗜ᴅ <b>: {}</b>
 
-𝗡𝗮𝗺𝗲 <b>: {}</b>
+𝗡ᴀᴍᴇ <b>: {}</b>
 
-𝗠𝗲𝘀𝘀𝗮𝗴𝗲 <b>: {}</b>"""
+𝗠ᴇsꜱᴀɢᴇ <b>: {}</b>"""
 
-    CAPTION = """<b>📂 ғɪʟᴇɴᴀᴍᴇ : {file_name}
-
-<b>⚙️ sɪᴢᴇ : {file_size}</b>""" 
+    # ✅ UPDATED CAPTION WITH YOUR NEW MESSAGE
+    CAPTION = """<b><a href='https://t.me/asbhai_bsr'>{file_name}</a></b>\n<b>⚙️ sɪᴢᴇ : {file_size}</b>\n\n<b>𝗙𝗶𝗹𝗺𝘆𝗙𝘂𝗻𝗱 ─ 𝗘𝗮𝗿𝗻 𝗥𝗲𝗮𝗹 𝗖𝗮𝘀𝗵 ☞ 𝗚𝗮𝗺𝗲𝘀, 𝗢𝗳𝗳𝗲𝗿𝘀, 𝗥𝗲𝗳𝗲𝗿𝗿𝗮𝗹𝘀, 𝗗𝗮𝗶𝗹𝘆 𝗕𝗼𝗻𝘂𝘀, 𝗟𝗲𝗮𝗱𝗲𝗿𝗯𝗼𝗮𝗿𝗱 𝗣𝗿𝗶𝘇𝗲𝘀, 𝗨𝗣𝗜/𝗕𝗮𝗻𝗸 𝗪𝗶𝘁𝗵𝗱𝗿𝗮𝘄𝗮𝗹 (₹𝟰𝟬 𝗺𝗶𝗻)</b>\n\n<b>@LinkProviderRobot</b>\n\n<b>𝖩𝗈𝗂𝗻➥ 「@asbhai_bsr @all_movies_webseries_is_here」</b>""" 
 
     IMDB_TEMPLATE_TXT = """
 <b>Query: {qurey}
@@ -273,7 +289,7 @@ Requested by : {message.from_user.mention}</b>"""
     GFILTER_TXT = """
 <b>Wᴇʟᴄᴏᴍᴇ ᴛᴏ Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs. Gʟᴏʙᴀʟ Fɪʟᴛᴇʀs ᴀʀᴇ ᴛʜᴇ ғɪʟᴛᴇʀs sᴇᴛ ʙʏ ʙᴏᴛ ᴀᴅᴍɪɴs ᴡʜɪᴄʜ ᴡɪʟʟ ᴡᴏʀᴋ ᴏɴ ᴀʟʟ ɢʀᴏᴜᴘs.</b>
     
-Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
+Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴds:
 • /gfilter - <code>Tᴏ ᴄʀᴇᴀᴛᴇ ᴀ ɢʟᴏʙᴀʟ ғɪʟᴛᴇʀ.</code>
 • /gfilters - <code>Tᴏ ᴠɪᴇᴡ ᴀʟʟ ɢʟᴏʙᴀʟ ғɪʟᴛᴇʀs.</code>
 • /delg - <code>Tᴏ ᴅᴇʟᴇᴛᴇ ᴀ ᴘᴀʀᴛɪᴄᴜʟᴀʀ ɢʟᴏʙᴀʟ ғɪʟᴛᴇʀ.</code>
@@ -316,7 +332,7 @@ Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
   
  ᴇxᴀᴍᴩʟᴇ: /𝗍𝗋 ᴍʟ 
  • ᴇɴ = ᴇɴɢʟɪꜱʜ 
- • ᴍʟ = ᴍᴀʟᴀyᴀʟᴀᴍ 
+ • ᴍʟ = ᴍᴀʟᴀʏᴀʟᴀᴍ 
  • ʜɪ = ʜɪɴᴅɪ</b>""" 
   
     TELE_TXT = """<b>ʜᴇʟᴘ: ᴛᴇʟᴇɢʀᴀᴘʜ ᴅᴏ ᴀꜱ ʏᴏᴜ ᴡɪꜱʜ ᴡɪᴛʜ ᴛᴇʟᴇɢʀᴀ.ᴘʜ ᴍᴏᴅᴜʟᴇ! 
@@ -379,7 +395,7 @@ Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
   
     FONT_TXT= """<b>ᴜꜱᴀɢᴇ 
   
- yᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴍᴏᴅᴜʟᴇ ᴛᴏ ᴄʜᴀɴɢᴇ ꜰᴏɴᴛ ꜱᴛyʟᴇ   
+ yᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴛʜɪꜱ ᴍᴏᴅᴜʟᴇ ᴛᴏ ᴄʜᴀɴɢᴇ ꜰᴏɴᴛ ꜱᴛʏʟᴇ   
   
  ᴄᴏᴍᴍᴀɴᴅ : /font yᴏᴜʀ ᴛᴇxᴛ (ᴏᴩᴛɪᴏɴᴀʟ) 
  ᴇɢ:- /font ʜᴇʟʟᴏ 
@@ -426,7 +442,7 @@ Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
   
     CARB_TXT = """<b>ʜᴇʟᴩ ꜰᴏʀ ᴄᴀʀʙᴏɴ 
   
- ᴄᴀʀʙᴏɴ ɪꜱ ᴀ ꜰᴇᴜᴛᴜʀᴇ ᴛᴏ ᴍᴀᴋᴇ ᴛʜᴇ ɪᴍᴀɢᴇ ᴀꜱ ꜱʜᴏᴡɴ ɪɴ ᴛʜᴇ ᴛᴏᴩ ᴡɪᴛʜ ʏᴏᴜʀ ᴛᴇxᴛꜱ. 
+ ᴄᴀʀʙᴏɴ ɪꜱ ᴀ ꜰᴇᴜᴛᴜʀᴇ ᴛᴏ ᴍᴀᴋᴇ ᴛʜᴇ ɪᴍᴀɢᴇ ᴀꜱ ꜱʜᴏᴡɴ ɪɴ ᴛʜᴇ ᴛᴏᴩ ᴡɪᴛʜ yᴏᴜʀ ᴛᴇxᴛꜱ. 
  ꜰᴏʀ ᴜꜱɪɴɢ ᴛʜᴇ ᴍᴏᴅᴜʟᴇ ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴛʜᴇ ᴛᴇxᴛ ᴀɴᴅ ᴏᴇᴩʟᴀʏ ᴛɪ ɪᴛ ᴡɪᴛʜ  /carbon ᴄᴏᴍᴍᴀɴᴅ ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴩᴇᴩᴀʏ ᴡɪᴛʜ ᴛʜᴇ ᴄᴀʀʙᴏɴ ɪᴍᴀɢᴇ 
 </b>""" 
     GEN_PASS = """<b>Hᴇʟᴘ: Pᴀꜱꜱᴡᴏʀᴅ Gᴇɴᴇʀᴀᴛᴏʀ 
@@ -440,7 +456,7 @@ Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
  NOTE: 
  • Oɴʟʏ Dɪɢɪᴛꜱ Aʀᴇ Aʟʟᴏᴡᴇᴅ 
  • Mᴀxɪᴍᴜᴍ Aʟʟᴏᴡᴇᴅ Dɪɢɪᴛꜱ Tɪʟʟ 𝟾𝟺  
- (I Cᴀɴ'ᴛ Gᴇɴᴇʀᴀᴛᴇ Pᴀꜱꜱᴡᴏʀᴅꜱ Aʙᴏᴠᴇ Tʜᴇ Lᴇɴɢᴛʜ 𝟾𝟺) 
+ (I Cᴀɴ'T Gᴇɴᴇʀᴀᴛᴇ Pᴀꜱꜱᴡᴏʀᴅꜱ Aʙᴏᴠᴇ Tʜᴇ Lᴇɴɢᴛʜ 𝟾𝟺) 
  • IMDʙ ꜱʜᴏᴜʟᴅ ʜᴀᴠᴇ ᴀᴅᴍɪɴ ᴘʀɪᴠɪʟʟᴀɢᴇ. 
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴡᴏʀᴋꜱ ᴏɴ ʙᴏᴛʜ ᴘᴍ ᴀɴᴅ ɢʀᴏᴜᴘ. 
  • Tʜᴇꜱᴇ ᴄᴏᴍᴍᴀɴᴅꜱ ᴄᴀɴ ʙᴇ ᴜꜱᴇᴅ ʙʏ ᴀɴʏ ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀ.</b>""" 
@@ -491,11 +507,11 @@ Aᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs:
 
  எப்படி மற்றும் என்ன செய்ய வேண்டும்
 
- படி 1: இந்த VJ-FILTER-BOT போட் உங்கள் குழுவை நிர்வாகியாக்குங்கள்
+ படி 1: இந்த @asfilter_bot போட் உங்கள் குழுவை நிர்வாகியாக்குங்கள்
 
  படி 2: உங்கள் இணையதளம் மற்றும் API ஐச் சேர்க்கவும்
 
- Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ Exp: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  வீடியோவைச் சேர்க்கவும்
 
@@ -518,11 +534,11 @@ Hey <a href='tg://settings'>ᴍʏ ғʀɪᴇɴᴅ</a>
 
  How and what to do
 
- Step 1: Administer this VJ-FILTER-BOT bot to your group
+ Step 1: Administer this @asfilter_bot bot to your group
 
  Step 2: Add your website and API
 
- Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ Exp: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  Add a video
 
@@ -545,11 +561,11 @@ Also your tutorial will be Added Your Group..."""
 
  ఎలా మరియు ఏమి చేయాలి
 
- దశ 1: ఈ VJ-FILTER-BOT బాట్‌ని మీ సమూహానికి నిర్వహించండి
+ దశ 1: ఈ @asfilter_bot బాట్‌ని మీ సమూహానికి నిర్వహించండి
 
  దశ 2: మీ వెబ్‌సైట్ మరియు APIని జోడించండి
 
- గడువు: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ గడువు: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  వీడియోను జోడించండి
 
@@ -576,7 +592,7 @@ Also your tutorial will be Added Your Group..."""
 
  चरण 2: अपनी वेबसाइट और एपीआई जोड़ें
 
- एक्सप: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ एक्सप: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  एक वीडियो जोड़ें
 
@@ -603,7 +619,7 @@ Also your tutorial will be Added Your Group..."""
 
  ഘട്ടം 2: നിങ്ങളുടെ വെബ്‌സൈറ്റും API-യും ചേർക്കുക
 
- കാലഹരണപ്പെടൽ: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ കാലഹരണപ്പെടൽ: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  ഒരു വീഡിയോ ചേർക്കുക
 
@@ -626,11 +642,11 @@ Also your tutorial will be Added Your Group..."""
 
  کیسے اور کیا کرنا ہے۔
 
- مرحلہ 1: اپنے گروپ میں اس VJ-FILTER-BOT بوٹ کا انتظام کریں۔
+ مرحلہ 1: اپنے گروپ میں اس @asfilter_bot بوٹ کا انتظام کریں۔
 
  مرحلہ 2: اپنی ویب سائٹ اور API شامل کریں۔
 
- Exp: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ Exp: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  ایک ویڈیو شامل کریں۔
 
@@ -653,11 +669,11 @@ Also your tutorial will be Added Your Group..."""
 
  કેવી રીતે અને શું કરવું
 
- પગલું 1: તમારા જૂથમાં આ VJ-FILTER-BOT બોટનું સંચાલન કરો
+ પગલું 1: તમારા જૂથમાં આ @asfilter_bot બોટનું સંચાલન કરો
 
  પગલું 2: તમારી વેબસાઇટ અને API ઉમેરો
 
- સમાપ્તિ: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ સમાપ્તિ: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  વિડિઓ ઉમેરો
 
@@ -683,7 +699,7 @@ Also your tutorial will be Added Your Group..."""
 
  ಹಂತ 2: ನಿಮ್ಮ ವೆಬ್‌ಸೈಟ್ ಮತ್ತು API ಸೇರಿಸಿ
 
- ಅವಧಿ: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ ಅವಧಿ: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  ವೀಡಿಯೊ ಸೇರಿಸಿ
 
@@ -705,11 +721,11 @@ Also your tutorial will be Added Your Group..."""
 
  কিভাবে এবং কি করতে হবে
 
- ধাপ 1: আপনার গ্রুপে এই VJ-FILTER-BOT বট পরিচালনা করুন
+ ধাপ 1: আপনার গ্রুপে এই @asfilter_bot বট পরিচালনা করুন
 
  ধাপ 2: আপনার ওয়েবসাইট এবং API যোগ করুন
 
- মেয়াদ: /shortlink xtz.in 4b392f8eb6ad711fbe58
+ মেয়াদ: /shortlink modijiurl.com c8726510e32e26a8e75a50fd377cd1e2d7f7ca06
 
  একটি ভিডিও যোগ করুন
 
@@ -746,10 +762,6 @@ Example:- /set_caption 📕 File Name: {filename}
 /stream - ɢᴇᴛ sᴛʀᴇᴀᴍᴀʙʟᴇ ᴀɴᴅ ᴅᴏᴡɴʟᴏᴀᴅᴀʙʟᴇ ʟɪɴᴋ ᴏғ ᴀɴʏ ғɪʟᴇ</b>"""
 
 
-# Don't Remove Credit @VJ_Bots
+# Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-
-
-    
-
