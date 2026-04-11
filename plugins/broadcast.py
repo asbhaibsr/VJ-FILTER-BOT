@@ -65,8 +65,13 @@ async def broadcast_group(bot, message):
     failed = 0
 
     success = 0
+    seen_group_ids = set()
     async for group in groups:
-        pti, sh = await broadcast_messages_group(int(group['id']), b_msg)
+        grp_id = int(group['id'])
+        if grp_id in seen_group_ids:
+            continue  # Skip duplicate group entries in DB
+        seen_group_ids.add(grp_id)
+        pti, sh = await broadcast_messages_group(grp_id, b_msg)
         if pti:
             success += 1
         elif sh == "Error":
