@@ -207,6 +207,12 @@ async def broadcast_messages_group(chat_id, message):
         await asyncio.sleep(e.x)
         return await broadcast_messages_group(chat_id, message)
     except Exception as e:
+        err = str(e).lower()
+        # Auto-remove groups where bot is banned/kicked/not member
+        if any(x in err for x in ['kicked', 'banned', 'not a member', 'chat_write_forbidden', 
+                                    'channel_private', 'peer_id_invalid', 'chat not found']):
+            await db.disable_chat(int(chat_id), "Bot was kicked or group unavailable")
+            logging.info(f"Group {chat_id} auto-disabled: {e}")
         return False, "Error"
     
 async def search_gagala(text):
@@ -579,6 +585,22 @@ async def verify_user(bot, userid, token):
     tz = pytz.timezone('Asia/Kolkata')
     today = date.today()
     VERIFIED[user.id] = str(today)
+    # Log verify complete to LOG_CHANNEL
+    try:
+        from datetime import datetime as dt
+        now = dt.now(tz)
+        time_str = now.strftime("%d %b %H:%M IST")
+        shortlink_url = VERIFY_SHORTLINK_URL if VERIFY_SHORTLINK_URL else "N/A"
+        log_text = (
+            f"✅ #VerifyComplete\n\n"
+            f"ɪᴅ - {user.id}\n"
+            f"Nᴀᴍᴇ - {user.mention}\n"
+            f"sʜᴏʀᴛʟɪɴᴋ - {shortlink_url}\n"
+            f"ᴛɪᴍᴇ - {time_str}"
+        )
+        await bot.send_message(LOG_CHANNEL, log_text, parse_mode=enums.ParseMode.HTML)
+    except Exception as e:
+        logger.error(f"Verify log error: {e}")
 
 async def check_verification(bot, userid):
     user = await bot.get_users(userid)
