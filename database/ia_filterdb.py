@@ -3,6 +3,7 @@
 # Ask Doubt on telegram @KingVJ01
 
 import re, base64, json
+import difflib
 from struct import pack
 from pyrogram.file_id import FileId
 from pymongo import MongoClient
@@ -23,9 +24,9 @@ sec_col = sec_db[COLLECTION_NAME]
 async def save_file(media):
     """Save file in the database."""
     
-    file_id = unpack_new_file_id(media.file_id)
+    file_id, _ = unpack_new_file_id(media.file_id)
     file_name = clean_file_name(media.file_name)
-    new_file_name = f"@VJ_Bots {file_name}"
+    new_file_name = f"@asbhai_bsr {file_name}"
     
     file = {
         'file_id': file_id,
@@ -64,15 +65,8 @@ def clean_file_name(file_name):
     for char in unwanted_chars:
         file_name = file_name.replace(char, '')
         
-    old_file_name = ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
-    new_file_name = add_space_between_e_and_number(old_file_name)
-    return new_file_name
+    return ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
 
-def add_space_between_e_and_number(input_string):
-    # Use regex to find 'e' or 'E' followed by a digit and add a space
-    output_string = re.sub(r'(e|E)([0-9])', r'1 2', input_string)
-    return output_string
-    
 def is_file_already_saved(file_id, file_name):
     """Check if the file is already saved in either collection."""
     found1 = {'file_name': file_name}
@@ -86,7 +80,7 @@ def is_file_already_saved(file_id, file_name):
     return False
 
 async def get_search_results(chat_id, query, file_type=None, max_results=10, offset=0, filter=False):
-    """For given query return (results, next_offset)"""
+    """For given query return (results, next_offset, total_results)"""
     
     query = query.strip()
     if not query:
@@ -95,30 +89,104 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
         raw_pattern = r'(\b|[\.\+\-_])' + query + r'(\b|[\.\+\-_])'
     else:
         raw_pattern = query.replace(' ', r'.*[\s\.\+\-_]') 
+    
     try:
         regex = re.compile(raw_pattern, flags=re.IGNORECASE)
     except:
         regex = query
-    filter = {'file_name': regex}
+
+    filter_dict = {'file_name': regex}
     files = []
+
+    # --- 1. First Try: Exact/Strict Search ---
     if MULTIPLE_DATABASE:
-        cursor1 = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
-        cursor2 = sec_col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
-        
+        # Fetch more than needed so we can deduplicate properly
+        fetch_limit = max_results * 2
+        cursor1 = col.find(filter_dict).sort('$natural', -1).skip(offset).limit(fetch_limit)
+        cursor2 = sec_col.find(filter_dict).sort('$natural', -1).skip(offset).limit(fetch_limit)
+        seen_ids = set()
         for file in cursor1:
-            files.append(file)
+            fid = file.get('file_id')
+            if fid not in seen_ids:
+                seen_ids.add(fid)
+                files.append(file)
         for file in cursor2:
-            files.append(file)
+            fid = file.get('file_id')
+            if fid not in seen_ids:
+                seen_ids.add(fid)
+                files.append(file)
+        files = files[:max_results]
     else:
-        cursor = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
+        cursor = col.find(filter_dict).sort('$natural', -1).skip(offset).limit(max_results)
+        for file in cursor: files.append(file)
+
+    if MULTIPLE_DATABASE:
+        # Count unique results across both DBs
+        ids1 = set(f['file_id'] for f in col.find(filter_dict, {'file_id': 1}))
+        ids2 = set(f['file_id'] for f in sec_col.find(filter_dict, {'file_id': 1}))
+        total_results = len(ids1 | ids2)
+    else:
+        total_results = col.count_documents(filter_dict)
+
+    if files:
+        next_offset = "" if (offset + max_results) >= total_results else (offset + max_results)
+        return files, next_offset, total_results
+
+    # --- 2. Second Try: Broader Fuzzy Search (If Exact Failed) ---
+    
+    if len(query) > 0:
+        first_char = query[0]
+        try:
+            start_regex = re.compile(f'^{re.escape(first_char)}', flags=re.IGNORECASE)
+        except:
+            return [], "", 0
+            
+        loose_filter = {'file_name': start_regex}
         
-        for file in cursor:
-            files.append(file)
+        # Fetch Candidates (Limit 300 per DB to avoid lag)
+        candidates = []
+        if MULTIPLE_DATABASE:
+            c1 = list(col.find(loose_filter).sort('$natural', -1).limit(300))
+            c2 = list(sec_col.find(loose_filter).sort('$natural', -1).limit(300))
+            seen_ids = set()
+            for file in c1 + c2:
+                fid = file.get('file_id')
+                if fid not in seen_ids:
+                    seen_ids.add(fid)
+                    candidates.append(file)
+        else:
+            candidates = list(col.find(loose_filter).sort('$natural', -1).limit(300))
 
-    total_results = col.count_documents(filter) if not MULTIPLE_DATABASE else (col.count_documents(filter) + sec_col.count_documents(filter))
-    next_offset = "" if (offset + max_results) >= total_results else (offset + max_results)
+        final_files = []
+        for file in candidates:
+            # 1. Normal Similarity
+            ratio = difflib.SequenceMatcher(None, query.lower(), file['file_name'].lower()).ratio()
+            
+            # 2. No-Space Similarity (e.g. "kal ki" vs "kalki")
+            ratio2 = difflib.SequenceMatcher(None, query.replace(" ", "").lower(), file['file_name'].replace(" ", "").lower()).ratio()
+            
+            # Max Score
+            score = max(ratio, ratio2)
+            
+            # Threshold: 50%
+            if score >= 0.50:
+                final_files.append((file, score))
 
-    return files, next_offset, total_results
+        # Sort by score
+        final_files.sort(key=lambda x: x[1], reverse=True)
+        
+        # Extract files
+        sorted_files = [x[0] for x in final_files]
+        
+        # Pagination Logic for Fuzzy Results
+        total_results = len(sorted_files)
+        files = sorted_files[offset:offset+max_results]
+        
+        next_offset = "" if (offset + max_results) >= total_results else (offset + max_results)
+        
+        return files, next_offset, total_results
+
+    return [], "", 0
 
 async def get_bad_files(query, file_type=None, use_filter=False):
     """For given query return (results, next_offset)"""
@@ -169,7 +237,7 @@ def encode_file_id(s: bytes) -> str:
     return base64.urlsafe_b64encode(r).decode().rstrip("=")
     
 def unpack_new_file_id(new_file_id):
-    """Return file_id"""
+    """Return (file_id, file_ref) tuple - file_ref may be empty string"""
     decoded = FileId.decode(new_file_id)
     file_id = encode_file_id(
         pack(
@@ -180,6 +248,9 @@ def unpack_new_file_id(new_file_id):
             decoded.access_hash
         )
     )
-    return file_id
-    
-
+    # file_ref for access hash verification (may be empty)
+    try:
+        file_ref = base64.urlsafe_b64encode(decoded.file_reference or b"").decode().rstrip("=")
+    except Exception:
+        file_ref = ""
+    return file_id, file_ref
