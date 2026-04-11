@@ -1,4 +1,4 @@
-# Don't Remove Credit @VJ_Bots
+# Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
@@ -184,8 +184,14 @@ class Database:
 
 
     async def add_chat(self, chat, title):
-        chat = self.new_group(chat, title)
-        await self.grp.insert_one(chat)
+        # Use upsert to prevent duplicate group entries in DB
+        existing = await self.grp.find_one({'id': int(chat)})
+        if existing:
+            # Already exists, just update title in case it changed
+            await self.grp.update_one({'id': int(chat)}, {'$set': {'title': title}})
+        else:
+            chat_doc = self.new_group(chat, title)
+            await self.grp.insert_one(chat_doc)
     
 
     async def get_chat(self, chat):
@@ -309,4 +315,3 @@ class Database:
     
 
 db = Database(USER_DB_URI, DATABASE_NAME)
-
