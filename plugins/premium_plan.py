@@ -78,7 +78,7 @@ def _plan_buttons(idx):
     ])
 
 
-@Client.on_message(filters.command("plan") & filters.incoming)
+@Client.on_message(filters.command("plan") & filters.incoming, group=0)
 async def plan_cmd(client, message):
     if not PREMIUM_AND_REFERAL_MODE:
         return await message.reply_text(
@@ -101,7 +101,7 @@ async def plan_cmd(client, message):
         )
 
 
-@Client.on_callback_query(filters.regex(r"^vj_plan_pg#"))
+@Client.on_callback_query(filters.regex(r"^vj_plan_pg#"), group=0)
 async def plan_page_cb(client, query: CallbackQuery):
     idx  = int(query.data.split("#")[1])
     plan = PLANS[idx]
@@ -123,12 +123,12 @@ async def plan_page_cb(client, query: CallbackQuery):
     await query.answer()
 
 
-@Client.on_callback_query(filters.regex("^vj_plan_noop$"))
+@Client.on_callback_query(filters.regex("^vj_plan_noop$"), group=0)
 async def plan_noop_cb(client, query: CallbackQuery):
     await query.answer("Ye sirf page number hai 😊")
 
 
-@Client.on_callback_query(filters.regex(r"^vj_buy_plan#"))
+@Client.on_callback_query(filters.regex(r"^vj_buy_plan#"), group=0)
 async def buy_plan_cb(client, query: CallbackQuery):
     plan_id = query.data.split("#")[1]
     plan    = next((p for p in PLANS if p["id"] == plan_id), None)
@@ -163,7 +163,7 @@ async def buy_plan_cb(client, query: CallbackQuery):
     await query.answer()
 
 
-@Client.on_callback_query(filters.regex(r"^vj_submit_pay#"))
+@Client.on_callback_query(filters.regex(r"^vj_submit_pay#"), group=0)
 async def submit_pay_cb(client, query: CallbackQuery):
     plan_id = query.data.split("#")[1]
     plan    = next((p for p in PLANS if p["id"] == plan_id), None)
@@ -251,7 +251,7 @@ async def receive_proof(client, message):
     )
 
 
-@Client.on_callback_query(filters.regex(r"^vj_prem_accept#"))
+@Client.on_callback_query(filters.regex(r"^vj_prem_accept#"), group=0)
 async def prem_accept_cb(client, query: CallbackQuery):
     if query.from_user.id not in ADMINS:
         return await query.answer("Sirf Admin kar sakta hai!", show_alert=True)
@@ -294,7 +294,7 @@ async def prem_accept_cb(client, query: CallbackQuery):
     await query.answer(f"✅ Premium activated for {user_id}!", show_alert=True)
 
 
-@Client.on_callback_query(filters.regex(r"^vj_prem_reject#"))
+@Client.on_callback_query(filters.regex(r"^vj_prem_reject#"), group=0)
 async def prem_reject_cb(client, query: CallbackQuery):
     if query.from_user.id not in ADMINS:
         return await query.answer("Sirf Admin kar sakta hai!", show_alert=True)
