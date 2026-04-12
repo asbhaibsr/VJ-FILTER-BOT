@@ -1382,26 +1382,60 @@ async def subscription_callback_handler(client, callback_query):
     if PREMIUM_AND_REFERAL_MODE == False:
         await callback_query.answer("Premium mode is currently disabled.", show_alert=True)
         return
-    
-    # Ye user ka ID hai refer link ke liye
+
     user_id = callback_query.from_user.id
-    bot_username = temp.U_NAME
-
     text = f"""<b>💎 <u>Premium & Referral Menu</u> 💎\n\nआप क्या करना चाहते हैं?</b>"""
-
-    btn = [            
-        [InlineKeyboardButton("👑 Buy Premium Plan", callback_data="buy_premium_plan")],
+    btn = [
+        [InlineKeyboardButton("👑 Buy Premium Plan", callback_data="vj_plan_pg#0")],
         [InlineKeyboardButton("♻️ Get Refer Link", callback_data="get_refer_link")],
         [InlineKeyboardButton("🔙 Back", callback_data="start")]
     ]
-    reply_markup = InlineKeyboardMarkup(btn)
-    
     await callback_query.message.edit_text(
         text=text,
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup(btn)
     )
 
-# buy_premium_plan callback moved to plugins/premium_plan.py
+# Also handle old buy_premium_plan callback (backward compat)
+@Client.on_callback_query(filters.regex("^buy_premium_plan$"))
+async def buy_premium_plan_redirect(client, callback_query):
+    """Redirect old callback to new plan page"""
+    await callback_query.answer()
+    from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
+    plan = PLANS[0]
+    try:
+        await callback_query.message.reply_photo(
+            photo=PAYMENT_QR,
+            caption=_plan_caption(plan),
+            reply_markup=_plan_buttons(0),
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        await callback_query.message.reply_text(
+            _plan_caption(plan),
+            reply_markup=_plan_buttons(0),
+            parse_mode=enums.ParseMode.HTML
+        )
+
+# Also handle old buy_premium callback
+@Client.on_callback_query(filters.regex("^buy_premium$"))
+async def buy_premium_redirect(client, callback_query):
+    """Redirect old buy_premium to new plan page"""
+    await callback_query.answer()
+    from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
+    plan = PLANS[0]
+    try:
+        await callback_query.message.reply_photo(
+            photo=PAYMENT_QR,
+            caption=_plan_caption(plan),
+            reply_markup=_plan_buttons(0),
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        await callback_query.message.reply_text(
+            _plan_caption(plan),
+            reply_markup=_plan_buttons(0),
+            parse_mode=enums.ParseMode.HTML
+        )
 
 # Ye naya code hai Refer Link dene ke liye
 @Client.on_callback_query(filters.regex("get_refer_link"))
@@ -1534,4 +1568,4 @@ async def purge_requests(client, message):
             text="Purged All Requests.",
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
-                                                                              )
+                       )
