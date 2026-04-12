@@ -359,10 +359,36 @@ async def filter_yearss_cb_handler(client: Client, query: CallbackQuery):
     except:
         pass
     if lang != "homepage":
-        search = f"{search} {lang}" 
+        # Build smarter episode search - "E05" -> match "E05", "Ep05", "Episode 5", "S*E05"
+        ep_num = lang.replace("e", "").lstrip("0") or "0"  # "e05" -> "5"
+        search_terms = [
+            f"{search} {lang}",           # original: "pushpa e05"
+            f"{search} episode {ep_num}", # "pushpa episode 5"
+            f"{search} ep{ep_num}",       # "pushpa ep5"
+            f"{search} ep {ep_num}",      # "pushpa ep 5"
+        ]
+        # Try each search term until files found
+        files = []
+        offset = 0
+        total_results = 0
+        for s_term in search_terms:
+            files, offset, total_results = await get_search_results(chat_id, s_term, offset=0, filter=True)
+            if files:
+                search = s_term
+                break
+        if not files:
+            search = f"{search} {lang}"
+    else:
+        files = None
     BUTTONS[key] = search
 
-    files, offset, total_results = await get_search_results(chat_id, search, offset=0, filter=True)
+    if not files and lang != "homepage":
+        pass  # already handled above
+    elif lang == "homepage":
+        # Reload original search
+        search = FRESH.get(key, "")
+        files, offset, total_results = await get_search_results(chat_id, search, offset=0, filter=True)
+
     if not files:
         await query.answer("🚫 𝗡𝗼 𝗙𝗶𝗹𝗲 𝗪𝗲𝗿𝗲 𝗙𝗼𝘂𝗻𝗱 🚫", show_alert=1)
         return
@@ -2004,20 +2030,30 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML
         )
     elif query.data == "subscription":
-        buttons = [[
-            InlineKeyboardButton('⇚Back', callback_data='start')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await client.edit_message_media(
-            query.message.chat.id, 
-            query.message.id, 
-            InputMediaPhoto(random.choice(PICS))
-        )
-        await query.message.edit_text(
-            text=script.SUBSCRIPTION_TXT.format(REFERAL_PREMEIUM_TIME, temp.U_NAME, query.from_user.id, REFERAL_COUNT),
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
+        # Handled by commands.py subscription_callback_handler (group=0)
+        # Show premium plan page directly
+        from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
+        plan = PLANS[0]
+        try:
+            await client.edit_message_media(
+                query.message.chat.id,
+                query.message.id,
+                InputMediaPhoto(PAYMENT_QR)
+            )
+            await query.message.edit_caption(
+                caption=_plan_caption(plan),
+                reply_markup=_plan_buttons(0),
+                parse_mode=enums.ParseMode.HTML
+            )
+        except Exception:
+            try:
+                await query.message.edit_text(
+                    text=_plan_caption(plan),
+                    reply_markup=_plan_buttons(0),
+                    parse_mode=enums.ParseMode.HTML
+                )
+            except Exception:
+                pass
     elif query.data == "manuelfilter":
         buttons = [[
             InlineKeyboardButton('⟸ Bᴀᴄᴋ', callback_data='filters'),
@@ -2679,6 +2715,21 @@ async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
         btn.append(
             [InlineKeyboardButton(text="𝐍𝐎 𝐌𝐎𝐑𝐄 𝐏𝐀𝐆𝐄𝐒 𝐀𝐕𝐀𝐈𝐋𝐀𝐁𝐋𝐄",callback_data="pages")]
         )
+    # ── Ad button: show active ad in results ──────────────────
+    try:
+        from database.ads_db import get_active_ad
+        active_ad = get_active_ad()
+        if active_ad:
+            ad_link = f"https://t.me/{temp.U_NAME}?start=ad_{active_ad['_id']}"
+            btn.append([
+                InlineKeyboardButton(
+                    text=f"📢 #Ads — {active_ad['title']}",
+                    url=ad_link
+                )
+            ])
+    except Exception:
+        pass
+    # ─────────────────────────────────────────────────────────
     imdb = await get_poster(search, file=(files[0])['file_name']) if settings["imdb"] else None
     cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
     time_difference = timedelta(hours=cur_time.hour, minutes=cur_time.minute, seconds=(cur_time.second+(cur_time.microsecond/1000000))) - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=(curr_time.second+(curr_time.microsecond/1000000)))
