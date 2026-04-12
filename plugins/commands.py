@@ -227,6 +227,14 @@ async def start(client, message):
     except:
         file_id = data
         pre = ""
+
+    # Handle ad start links: /start ad_<ad_id>
+    if data.startswith("ad_"):
+        ad_id = data[3:]
+        from plugins.ads import handle_ad_start
+        await handle_ad_start(client, message, ad_id)
+        return
+
     if data.split("-", 1)[0] == "BATCH":
         sts = await message.reply("<b>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ...</b>")
         file_id = data.split("-", 1)[1]
@@ -1462,49 +1470,62 @@ async def request_movie_click(client, query):
         text="👋 **Hello " + query.from_user.first_name + "!**\n\n"
              "Apni Movie/Series ka naam Language aur Year ke sath niche likh kar bhejein.\n\n"
              "Example: `Pushpa 2 Hindi 2024`",
-        reply_markup=ForceReply(selective=True) # Ye user ko type karne ke liye force karega
+        reply_markup=ForceReply(selective=True)
     )
 
 # 2. Jab User Movie ka naam likh kar bhejega (Reply handle)
 @Client.on_message(filters.private & filters.reply)
 async def handle_request_reply(client, message):
-    # Check karenge ki ye wahi request message ka reply hai ya nahi
-    if message.reply_to_message and "Apni Movie/Series ka naam" in message.reply_to_message.text:
-        
-        request_text = message.text
-        user_id = message.from_user.id
-        user_mention = message.from_user.mention
-        
-        # User ko confirm message
-        await message.reply_text("✅ **Aapki Request Owner ko bhej di gayi hai!**\nJald hi update milega.")
-        
-        # Owner ke liye buttons
-        admin_buttons = [
-            [
-                InlineKeyboardButton("✅ Uploaded", callback_data=f"reqstatus#up#{user_id}"),
-                InlineKeyboardButton("❌ Rejected", callback_data=f"reqstatus#rej#{user_id}")
-            ],
-            [
-                InlineKeyboardButton("⚠️ Not Released", callback_data=f"reqstatus#nore#{user_id}")
-            ]
-        ]
-        
-        # Saare Admins ko message bhejein
-        notification_text = (
-            f"🔔 **New Movie Request!**\n\n"
-            f"👤 **User:** {user_mention} (`{user_id}`)\n"
-            f"🎬 **Request:** `{request_text}`"
+    if not (message.reply_to_message and "Apni Movie/Series ka naam" in (message.reply_to_message.text or "")):
+        return
+
+    request_text = message.text
+    user_id = message.from_user.id
+    user_mention = message.from_user.mention
+
+    # ── DB check first ──────────────────────────────────────────
+    from database.ia_filterdb import get_search_results as _search
+    try:
+        db_files, _, db_total = await _search(None, request_text.lower(), offset=0, filter=True)
+    except Exception:
+        db_files, db_total = [], 0
+
+    if db_files and db_total > 0:
+        # Movie already exists in DB - tell user to search
+        await message.reply_text(
+            f"✅ **Ye movie/series already available hai!**\n\n"
+            f"🔍 Bot mein search karo: `{request_text}`\n\n"
+            f"Agar nahi mili to `/request` group mein try karo ya thoda aur wait karo.",
+            parse_mode=enums.ParseMode.MARKDOWN
         )
-        
-        for admin_id in ADMINS:
-            try:
-                await client.send_message(
-                    chat_id=int(admin_id),
-                    text=notification_text,
-                    reply_markup=InlineKeyboardMarkup(admin_buttons)
-                )
-            except Exception as e:
-                print(f"Error sending request to admin: {e}")
+        return
+    # ────────────────────────────────────────────────────────────
+
+    await message.reply_text("✅ **Aapki Request Owner ko bhej di gayi hai!**\nJald hi update milega.")
+
+    admin_buttons = [
+        [
+            InlineKeyboardButton("✅ Uploaded", callback_data=f"reqstatus#up#{user_id}"),
+            InlineKeyboardButton("❌ Rejected", callback_data=f"reqstatus#rej#{user_id}")
+        ],
+        [
+            InlineKeyboardButton("⚠️ Not Released", callback_data=f"reqstatus#nore#{user_id}")
+        ]
+    ]
+    notification_text = (
+        f"🔔 **New Movie Request!**\n\n"
+        f"👤 **User:** {user_mention} (`{user_id}`)\n"
+        f"🎬 **Request:** `{request_text}`"
+    )
+    for admin_id in ADMINS:
+        try:
+            await client.send_message(
+                chat_id=int(admin_id),
+                text=notification_text,
+                reply_markup=InlineKeyboardMarkup(admin_buttons)
+            )
+        except Exception as e:
+            print(f"Error sending request to admin: {e}")
 
 # 3. Jab Owner Button (Uploaded/Rejected/Not Released) par click karega
 @Client.on_callback_query(filters.regex(r"^reqstatus"))
@@ -1568,4 +1589,4 @@ async def purge_requests(client, message):
             text="Purged All Requests.",
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
-                       )
+            )
