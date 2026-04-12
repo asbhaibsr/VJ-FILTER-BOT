@@ -1112,7 +1112,7 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
 
 # Yahan par ab koi extra else block nahi hai
 
-@Client.on_callback_query()
+@Client.on_callback_query(group=1)
 async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
