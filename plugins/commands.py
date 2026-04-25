@@ -28,7 +28,7 @@ async def start(client, message):
         pass
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         buttons = [[
-            InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+            InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
         ],[
             InlineKeyboardButton('sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url=f'https://t.me/{SUPPORT_CHAT}'),
             InlineKeyboardButton('ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
@@ -50,27 +50,31 @@ async def start(client, message):
     if len(message.command) != 2:
         if PREMIUM_AND_REFERAL_MODE == True:
             buttons = [[
-                InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                 InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                InlineKeyboardButton('💎 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 / 𝗥𝗲𝗳𝗲𝗿', callback_data='subscription')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ', callback_data='subscription')
             ],[
-                InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
+            ],[
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         else:
             buttons = [[
-                InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                 InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                InlineKeyboardButton('📖 𝗔𝗯𝗼𝘂𝘁 𝗔𝘀', callback_data='about')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('📖 ᴀʙᴏᴜᴛ ᴜꜱ', callback_data='about')
             ],[
-                InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
+            ],[
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('ᴄʀᴇᴀᴛᴇ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')])
@@ -134,27 +138,31 @@ async def start(client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         if PREMIUM_AND_REFERAL_MODE == True:
             buttons = [[
-                InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                 InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                InlineKeyboardButton('💎 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 / 𝗥𝗲𝗳𝗲𝗿', callback_data='subscription')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ', callback_data='subscription')
             ],[
-                InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
+            ],[
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         else:
             buttons = [[
-                InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                 InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                InlineKeyboardButton('📖 𝗔𝗯𝗼𝘂𝘁 𝗔𝘀', callback_data='about')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('📖 ᴀʙᴏᴜᴛ ᴜꜱ', callback_data='about')
             ],[
-                InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
+            ],[
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('ᴄʀᴇᴀᴛᴇ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')])
@@ -167,7 +175,7 @@ async def start(client, message):
         )
         return
     data = message.command[1]
-    if data.split("-", 1)[0] == "VJ":
+    if data.split("-", 1)[0] == "AS":
         user_id = int(data.split("-", 1)[1])
         vj = await referal_add_user(user_id, message.from_user.id)
         if vj and PREMIUM_AND_REFERAL_MODE == True:
@@ -187,27 +195,27 @@ async def start(client, message):
         else:
             if PREMIUM_AND_REFERAL_MODE == True:
                 buttons = [[
-                    InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                    InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                    InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                     InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                    InlineKeyboardButton('💎 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 / 𝗥𝗲𝗳𝗲𝗿', callback_data='subscription')
+                    InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                    InlineKeyboardButton('🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ', callback_data='subscription')
                 ],[
-                    InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                    InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
                 ]]
             else:
                 buttons = [[
-                    InlineKeyboardButton('🚀 𝗔𝗗𝗗 𝗠𝗘 𝗧𝗢 𝗬𝗢𝗨𝗥 𝗚𝗥𝗢𝗨𝗣', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                    InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
                 ],[
-                    InlineKeyboardButton('💸 𝗘𝗮𝗿𝗻 𝗠𝗼𝗻𝗲𝘆', callback_data="shortlink_info"),
+                    InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
                     InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
                 ],[
-                    InlineKeyboardButton('🎞️ 𝗙𝗲𝗮𝘁𝘂𝗿𝗲𝘀', callback_data='help'),
-                    InlineKeyboardButton('📖 𝗔𝗯𝗼𝘂𝘁 𝗔𝘀', callback_data='about')
+                    InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                    InlineKeyboardButton('📖 ᴀʙᴏᴜᴛ ᴜꜱ', callback_data='about')
                 ],[
-                    InlineKeyboardButton('📝 𝗥𝗲𝗾𝘂𝗲𝘀𝘁 𝗠𝗼𝘃𝗶𝗲', callback_data='request_movie')
+                    InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
                 ]]
             if CLONE_MODE == True:
                 buttons.append([InlineKeyboardButton('ᴄʀᴇᴀᴛᴇ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')])
@@ -1392,16 +1400,35 @@ async def subscription_callback_handler(client, callback_query):
         return
 
     user_id = callback_query.from_user.id
-    text = f"""<b>💎 <u>Premium & Referral Menu</u> 💎\n\nआप क्या करना चाहते हैं?</b>"""
-    btn = [
-        [InlineKeyboardButton("👑 Buy Premium Plan", callback_data="vj_plan_pg#0")],
-        [InlineKeyboardButton("♻️ Get Refer Link", callback_data="get_refer_link")],
-        [InlineKeyboardButton("🔙 Back", callback_data="start")]
-    ]
-    await callback_query.message.edit_text(
-        text=text,
-        reply_markup=InlineKeyboardMarkup(btn)
+    text = (
+        "<b>🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ 🆓</b>\n\n"
+        "✨ <b>Premium paane ke 2 tarike hain:</b>\n\n"
+        "👑 <b>Buy Premium</b> — Direct plan purchase karke premium lo\n"
+        "♻️ <b>Refer & Earn</b> — Dosto ko refer karo aur free premium jito!\n\n"
+        "Neeche se choose karo 👇"
     )
+    btn = [
+        [InlineKeyboardButton("👑 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ ᴅᴇᴋʜᴏ", callback_data="vj_plan_pg#0")],
+        [InlineKeyboardButton("♻️ ʀᴇꜰᴇʀ ʟɪɴᴋ ʟᴏ", callback_data="get_refer_link")],
+        [InlineKeyboardButton("📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ", url="https://t.me/AdManagerfreebot")],
+        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
+    ]
+    try:
+        await callback_query.message.edit_caption(
+            caption=text,
+            reply_markup=InlineKeyboardMarkup(btn),
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        try:
+            await callback_query.message.edit_text(
+                text=text,
+                reply_markup=InlineKeyboardMarkup(btn),
+                parse_mode=enums.ParseMode.HTML
+            )
+        except Exception:
+            pass
+    await callback_query.answer()
 
 # Also handle old buy_premium_plan callback (backward compat)
 @Client.on_callback_query(filters.regex("^buy_premium_plan$"))
@@ -1449,7 +1476,7 @@ async def buy_premium_redirect(client, callback_query):
 @Client.on_callback_query(filters.regex("get_refer_link"))
 async def get_refer_link(client, callback_query):
     user_id = callback_query.from_user.id
-    referral_link = f"https://t.me/{temp.U_NAME}?start=VJ-{user_id}"
+    referral_link = f"https://t.me/{temp.U_NAME}?start=AS-{user_id}"
     text = f"<b>♻️ <u>Your Referral Link</u> ♻️\n\nShare this link to earn points/premium:\n\n<code>{referral_link}</code>\n\n(Click to copy)</b>"
     
     await callback_query.message.edit_text(
@@ -1590,3 +1617,178 @@ async def purge_requests(client, message):
             parse_mode=enums.ParseMode.MARKDOWN,
             disable_web_page_preview=True
             )
+
+
+# ====================================================================
+#              REDEEM CODE SYSTEM — /genredeem & /redeem
+# ====================================================================
+
+import secrets
+
+PLAN_NAMES = {
+    1: ("🥉", "Bronze Plan",  "7day"),
+    2: ("🥇", "Gold Plan",    "1month"),
+    3: ("💎", "Diamond Plan", "6month"),
+}
+
+def _parse_duration_label(duration_str: str) -> str:
+    """Convert '10day' -> '10 Days', '2week' -> '2 Weeks', '1year' -> '1 Year'"""
+    import re
+    m = re.match(r'^(\d+)(day|week|month|year)s?$', duration_str.lower())
+    if not m:
+        return duration_str
+    num, unit = m.group(1), m.group(2)
+    unit_map = {"day": "Day", "week": "Week", "month": "Month", "year": "Year"}
+    label = unit_map.get(unit, unit).capitalize()
+    if int(num) > 1:
+        label += "s"
+    return f"{num} {label}"
+
+
+@Client.on_message(filters.command("genredeem") & filters.user(ADMINS))
+async def gen_redeem_cmd(client, message):
+    """
+    Usage: /genredeem <plan_type 1/2/3> <duration>
+    Example: /genredeem 2 10day
+    Duration examples: 10day, 2week, 1month, 1year
+    """
+    if len(message.command) != 3:
+        return await message.reply_text(
+            "<b>❌ Galat Format!\n\n"
+            "✅ Sahi Format:\n"
+            "<code>/genredeem &lt;plan_type&gt; &lt;duration&gt;</code>\n\n"
+            "📌 Plan Types:\n"
+            "  <code>1</code> → 🥉 Bronze Plan\n"
+            "  <code>2</code> → 🥇 Gold Plan\n"
+            "  <code>3</code> → 💎 Diamond Plan\n\n"
+            "⏳ Duration Examples:\n"
+            "  <code>10day</code>  <code>2week</code>  <code>1month</code>  <code>1year</code>\n\n"
+            "🔸 Example: <code>/genredeem 2 1month</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    try:
+        plan_type = int(message.command[1])
+        if plan_type not in PLAN_NAMES:
+            raise ValueError
+    except ValueError:
+        return await message.reply_text("<b>❌ Plan type sirf 1, 2 ya 3 ho sakta hai!</b>")
+
+    duration = message.command[2].lower()
+    import re as _re
+    if not _re.match(r'^\d+(day|week|month|year)s?$', duration):
+        return await message.reply_text(
+            "<b>❌ Duration format galat hai!\n\n"
+            "Sahi examples: <code>10day</code>, <code>2week</code>, <code>1month</code>, <code>1year</code></b>"
+        )
+
+    # Generate unique code
+    code = "AS-" + secrets.token_hex(4).upper()  # e.g. VJ-A1B2C3D4
+
+    emoji, plan_name, _ = PLAN_NAMES[plan_type]
+    duration_label = _parse_duration_label(duration)
+
+    # Save to DB
+    await db.save_redeem_code(code, plan_type, duration)
+
+    text = (
+        f"<blockquote>"
+        f"✨ <b>Redeem Code Generated!</b> ✨\n\n"
+        f"╔══════════════════════╗\n"
+        f"  {emoji}  <b>{plan_name}</b>  {emoji}\n"
+        f"  ⏳ Duration: <b>{duration_label}</b>\n"
+        f"╚══════════════════════╝\n\n"
+        f"🔑 <b>Your Code:</b>\n"
+        f"<code>{code}</code>\n\n"
+        f"📌 <b>Is code ko /redeem command se use karo:</b>\n"
+        f"<code>/redeem {code}</code>\n\n"
+        f"⚠️ <i>Ye code sirf ek baar use ho sakta hai!</i>"
+        f"</blockquote>"
+    )
+    await message.reply_text(text, parse_mode=enums.ParseMode.HTML)
+
+    # Log channel pe bhi bhejo
+    try:
+        await client.send_message(
+            LOG_CHANNEL,
+            f"🔑 <b>#RedeemGenerated</b>\n\n"
+            f"👤 <b>By:</b> {message.from_user.mention} (<code>{message.from_user.id}</code>)\n"
+            f"📦 <b>Plan:</b> {emoji} {plan_name}\n"
+            f"⏳ <b>Duration:</b> {duration_label}\n"
+            f"🔑 <b>Code:</b> <code>{code}</code>",
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        pass
+
+
+@Client.on_message(filters.command("redeem") & filters.incoming)
+async def redeem_code_cmd(client, message):
+    """Usage: /redeem <CODE>"""
+    if not PREMIUM_AND_REFERAL_MODE:
+        return
+
+    if len(message.command) != 2:
+        return await message.reply_text(
+            "<b>❌ Code daalo!\n\n"
+            "✅ Format: <code>/redeem AS-XXXXXXXX</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    code = message.command[1].strip().upper()
+    user_id = message.from_user.id
+
+    code_data = await db.get_redeem_code(code)
+
+    if not code_data:
+        return await message.reply_text("<b>❌ Ye code invalid hai ya exist nahi karta!</b>")
+
+    import datetime
+    if code_data.get("used"):
+        return await message.reply_text("<b>❌ Ye code already use ho chuka hai!</b>")
+
+    if datetime.datetime.now() > code_data.get("expires_at", datetime.datetime.now()):
+        return await message.reply_text("<b>❌ Ye code expire ho chuka hai!</b>")
+
+    duration = code_data["duration"]
+    plan_type = code_data["plan_type"]
+    emoji, plan_name, _ = PLAN_NAMES[plan_type]
+    duration_label = _parse_duration_label(duration)
+
+    # Apply premium
+    seconds = await get_seconds(duration)
+    if seconds <= 0:
+        return await message.reply_text("<b>❌ Duration invalid hai!</b>")
+
+    expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
+    await db.update_user({"id": user_id, "expiry_time": expiry_time})
+    await db.mark_redeem_used(code, user_id)
+
+    success_text = (
+        f"<blockquote>"
+        f"🎉 <b>Congratulations {message.from_user.mention}!</b>\n\n"
+        f"✅ <b>Redeem Successful!</b>\n\n"
+        f"╔══════════════════════╗\n"
+        f"  {emoji}  <b>{plan_name}</b>  {emoji}\n"
+        f"  ⏳ Duration: <b>{duration_label}</b>\n"
+        f"  📅 Expiry: <b>{expiry_time.strftime('%d %b %Y, %I:%M %p')}</b>\n"
+        f"╚══════════════════════╝\n\n"
+        f"🚀 Ab aap directly files access kar sakte hain!\n"
+        f"📊 Apna plan check karo: /myplan"
+        f"</blockquote>"
+    )
+    await message.reply_text(success_text, parse_mode=enums.ParseMode.HTML)
+
+    # Log channel
+    try:
+        await client.send_message(
+            LOG_CHANNEL,
+            f"🎉 <b>#RedeemUsed</b>\n\n"
+            f"👤 <b>User:</b> {message.from_user.mention} (<code>{user_id}</code>)\n"
+            f"📦 <b>Plan:</b> {emoji} {plan_name}\n"
+            f"⏳ <b>Duration:</b> {duration_label}\n"
+            f"🔑 <b>Code:</b> <code>{code}</code>",
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        pass
