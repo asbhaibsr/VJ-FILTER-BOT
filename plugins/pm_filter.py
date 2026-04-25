@@ -1883,43 +1883,52 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "start":
         if PREMIUM_AND_REFERAL_MODE == True:
             buttons = [[
-                InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('ʜᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('ᴀʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ', callback_data='subscription')
             ],[
-                InlineKeyboardButton('ᴘʀᴇᴍɪᴜᴍ ᴀɴᴅ ʀᴇғᴇʀʀᴀʟ', callback_data='subscription')
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
             ],[
-                InlineKeyboardButton('ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         else:
             buttons = [[
-                InlineKeyboardButton('⤬ ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ⤬', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
+                InlineKeyboardButton('🚀 ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-                InlineKeyboardButton('ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
-                InlineKeyboardButton('ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
+                InlineKeyboardButton('💸 ᴇᴀʀɴ ᴍᴏɴᴇʏ', callback_data="shortlink_info"),
+                InlineKeyboardButton('🎬 ᴍᴏᴠɪᴇ ɢʀᴏᴜᴘ', url=GRP_LNK)
             ],[
-                InlineKeyboardButton('ʜᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('ᴀʙᴏᴜᴛ', callback_data='about')
+                InlineKeyboardButton('🎞️ ꜰᴇᴀᴛᴜʀᴇꜱ', callback_data='help'),
+                InlineKeyboardButton('📖 ᴀʙᴏᴜᴛ ᴜꜱ', callback_data='about')
             ],[
-                InlineKeyboardButton('ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url=CHNL_LNK)
+                InlineKeyboardButton('📝 ʀᴇQᴜᴇꜱᴛ ᴍᴏᴠɪᴇ', callback_data='request_movie')
+            ],[
+                InlineKeyboardButton('📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ', url='https://t.me/AdManagerfreebot')
             ]]
         if CLONE_MODE == True:
             buttons.append([InlineKeyboardButton('ᴄʀᴇᴀᴛᴇ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')])
         reply_markup = InlineKeyboardMarkup(buttons)
-        await client.edit_message_media(
-            query.message.chat.id, 
-            query.message.id, 
-            InputMediaPhoto(random.choice(PICS))
-        )
-        await query.message.edit_text(
-            text=script.START_TXT.format(query.from_user.mention, temp.U_NAME, temp.B_NAME),
-            reply_markup=reply_markup,
-            parse_mode=enums.ParseMode.HTML
-        )
+        try:
+            await client.edit_message_media(
+                query.message.chat.id, 
+                query.message.id, 
+                InputMediaPhoto(random.choice(PICS))
+            )
+            await query.message.edit_caption(
+                caption=f"Hey {query.from_user.mention}, I am a powerful and fast Auto-Filter Bot made for your groups.",
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
+        except Exception:
+            await query.message.edit_text(
+                text=f"Hey {query.from_user.mention}, I am a powerful and fast Auto-Filter Bot made for your groups.",
+                reply_markup=reply_markup,
+                parse_mode=enums.ParseMode.HTML
+            )
         await query.answer(MSG_ALRT)
 
     elif query.data == "clone":
