@@ -32,18 +32,19 @@ def _expiry(duration_str: str) -> datetime.datetime:
         return now + datetime.timedelta(weeks=1)
 
 
-def add_ad(title: str, post_text_or_link: str, image_url: str, duration: str) -> str:
-    """Add new ad. Returns the bot start parameter (ad_id)."""
+def add_ad(title: str, post_text_or_link: str, image, image_type: str, duration: str) -> str:
+    """Add new ad. Returns the ad_id (bot start parameter)."""
     import secrets
-    ad_id = secrets.token_hex(6)   # e.g. "a1b2c3d4e5f6"
+    ad_id = secrets.token_hex(6)
     doc = {
-        "_id":      ad_id,
-        "title":    title,
-        "content":  post_text_or_link,   # URL or text
-        "image":    image_url,
-        "expires":  _expiry(duration),
-        "created":  _now(),
-        "clicks":   0,
+        "_id":        ad_id,
+        "title":      title,
+        "content":    post_text_or_link,
+        "image":      image,          # file_id or URL or None
+        "image_type": image_type,     # "file_id", "url", or None
+        "expires":    _expiry(duration),
+        "created":    _now(),
+        "clicks":     0,
     }
     ads_col.insert_one(doc)
     return ad_id
