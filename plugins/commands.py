@@ -1707,17 +1707,25 @@ async def gen_redeem_cmd(client, message):
         await db.save_redeem_code(code, plan_type, duration)
         codes.append(code)
 
-    # Build beautiful message
-    codes_text = "\n".join(f"  <code>{c}</code>" for c in codes)
+    # Build beautiful message — har code clickable + copy hint
+    lines = []
+    for c in codes:
+        lines.append(f"<code>/redeem {c}</code>")
+    codes_text = "\n".join(lines)
 
     text = (
         f"<blockquote>"
-        f"✅ <b>{count} Redeem Code{'s' if count > 1 else ''} Ready!</b>\n\n"
+        f"✅ <b>{count} Code{'s' if count > 1 else ''} Ready!</b>\n"
         f"{emoji} <b>{plan_name}</b>  |  ⏳ <b>{duration_label}</b>\n\n"
-        f"🔑 <b>Codes:</b>\n"
+        f"🔑 <b>Codes (tap karke copy karo):</b>\n"
         f"{codes_text}\n\n"
-        f"📌 Use: <code>/redeem &lt;code&gt;</code>\n"
-        f"⚠️ <i>Har code sirf 1 baar use hoga</i>"
+        f"📌 <b>Kaise use karein?</b>\n"
+        f"Upar se code copy karo → @AsFilter_bot pe bhejo → Premium mil jayega!\n\n"
+        f"✨ <b>Premium Features:</b>\n"
+        f"• Bina ad ke movies access\n"
+        f"• Direct file delivery\n"
+        f"• Fast search results\n\n"
+        f"⚠️ <i>Har code sirf 1 baar, 1 din mein 1 hi code</i>"
         f"</blockquote>"
     )
     await message.reply_text(text, parse_mode=enums.ParseMode.HTML)
@@ -1746,64 +1754,103 @@ async def redeem_code_cmd(client, message):
 
     if len(message.command) != 2:
         return await message.reply_text(
-            "<b>❌ Code daalo!\n\n"
-            "✅ Format: <code>/redeem AS-XXXXXXXX</code></b>",
+            "<b>❌ Code daalo!\n\n✅ Format: <code>/redeem AS-XXXXXXXX</code></b>",
             parse_mode=enums.ParseMode.HTML
         )
 
-    code = message.command[1].strip().upper()
+    code    = message.command[1].strip().upper()
     user_id = message.from_user.id
-
-    code_data = await db.get_redeem_code(code)
-
-    if not code_data:
-        return await message.reply_text("<b>❌ Ye code invalid hai ya exist nahi karta!</b>")
-
     import datetime
+
+    # ── 1. Code exist karta hai? ──────────────────────────────
+    code_data = await db.get_redeem_code(code)
+    if not code_data:
+        return await message.reply_text(
+            "<b>❌ Ye code invalid hai ya exist nahi karta!</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # ── 2. Already use hua? ───────────────────────────────────
     if code_data.get("used"):
-        return await message.reply_text("<b>❌ Ye code already use ho chuka hai!</b>")
+        used_by = code_data.get("used_by")
+        if used_by == user_id:
+            return await message.reply_text(
+                "<b>❌ Ye code aapne pehle use kar liya hai!</b>",
+                parse_mode=enums.ParseMode.HTML
+            )
+        return await message.reply_text(
+            "<b>❌ Ye code kisi aur ne already use kar liya hai!</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
 
-    if datetime.datetime.now() > code_data.get("expires_at", datetime.datetime.now()):
-        return await message.reply_text("<b>❌ Ye code expire ho chuka hai!</b>")
+    # ── 3. Code expire hua? ───────────────────────────────────
+    if datetime.datetime.now() > code_data.get("expires_at", datetime.datetime.max):
+        return await message.reply_text(
+            "<b>❌ Ye code expire ho chuka hai!</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
 
-    duration = code_data["duration"]
-    plan_type = code_data["plan_type"]
+    # ── 4. User already premium hai? ─────────────────────────
+    already_premium = await db.has_premium_access(user_id)
+    if already_premium:
+        user_data = await db.get_user(user_id)
+        exp = user_data.get("expiry_time")
+        exp_str = exp.strftime("%d %b %Y") if exp else "Unknown"
+        return await message.reply_text(
+            f"<b>⚠️ Aapke paas pehle se Premium hai!\n\n"
+            f"📅 Expiry: <b>{exp_str}</b>\n\n"
+            f"Plan check karo: /myplan</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # ── 5. 1 din mein 1 hi code ──────────────────────────────
+    used_today = await db.get_user_redeem_today(user_id)
+    if used_today >= 1:
+        return await message.reply_text(
+            "<b>⚠️ Aap aaj ek code use kar chuke ho!\n"
+            "Kal dobara try karo.</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # ── 6. Premium apply karo ────────────────────────────────
+    duration   = code_data["duration"]
+    plan_type  = code_data["plan_type"]
     emoji, plan_name, _ = PLAN_NAMES[plan_type]
     duration_label = _parse_duration_label(duration)
 
-    # Apply premium
     seconds = await get_seconds(duration)
     if seconds <= 0:
-        return await message.reply_text("<b>❌ Duration invalid hai!</b>")
+        return await message.reply_text("<b>❌ Duration invalid hai!</b>", parse_mode=enums.ParseMode.HTML)
 
     expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
     await db.update_user({"id": user_id, "expiry_time": expiry_time})
     await db.mark_redeem_used(code, user_id)
 
+    # ── 7. Success message ────────────────────────────────────
     success_text = (
         f"<blockquote>"
         f"🎉 <b>Congratulations {message.from_user.mention}!</b>\n\n"
-        f"✅ <b>Redeem Successful!</b>\n\n"
-        f"╔══════════════════════╗\n"
-        f"  {emoji}  <b>{plan_name}</b>  {emoji}\n"
-        f"  ⏳ Duration: <b>{duration_label}</b>\n"
-        f"  📅 Expiry: <b>{expiry_time.strftime('%d %b %Y, %I:%M %p')}</b>\n"
-        f"╚══════════════════════╝\n\n"
-        f"🚀 Ab aap directly files access kar sakte hain!\n"
-        f"📊 Apna plan check karo: /myplan"
+        f"✅ Premium mil gaya!\n\n"
+        f"{emoji} <b>{plan_name}</b>\n"
+        f"⏳ Duration: <b>{duration_label}</b>\n"
+        f"📅 Expiry: <b>{expiry_time.strftime('%d %b %Y')}</b>\n\n"
+        f"🚀 <b>Premium Features:</b>\n"
+        f"• Bina ad ke movies access\n"
+        f"• Direct file milegi\n"
+        f"• Fast search results\n\n"
+        f"📊 Plan check: /myplan"
         f"</blockquote>"
     )
     await message.reply_text(success_text, parse_mode=enums.ParseMode.HTML)
 
-    # Log channel
+    # ── 8. Log channel ────────────────────────────────────────
     try:
         await client.send_message(
             LOG_CHANNEL,
-            f"🎉 <b>#RedeemUsed</b>\n\n"
-            f"👤 <b>User:</b> {message.from_user.mention} (<code>{user_id}</code>)\n"
-            f"📦 <b>Plan:</b> {emoji} {plan_name}\n"
-            f"⏳ <b>Duration:</b> {duration_label}\n"
-            f"🔑 <b>Code:</b> <code>{code}</code>",
+            f"🎉 <b>#RedeemUsed</b>\n"
+            f"👤 {message.from_user.mention} (<code>{user_id}</code>)\n"
+            f"📦 {emoji} {plan_name} | ⏳ {duration_label}\n"
+            f"🔑 Code: <code>{code}</code>",
             parse_mode=enums.ParseMode.HTML
         )
     except Exception:
