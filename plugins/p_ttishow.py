@@ -202,65 +202,101 @@ async def gen_invite(bot, message):
 
 @Client.on_message(filters.command('ban') & filters.user(ADMINS))
 async def ban_a_user(bot, message):
-    if len(message.command) == 1:
-        return await message.reply('Give me a user id / username')
-    r = message.text.split(None)
-    if len(r) > 2:
-        reason = message.text.split(None, 2)[2]
-        chat = message.text.split(None, 2)[1]
+    if len(message.command) == 1 and not message.reply_to_message:
+        return await message.reply_text(
+            "<b>❌ User ID / Username daalo!\n\n"
+            "✅ Format: <code>/ban user_id reason</code>\n"
+            "🔸 Example: <code>/ban 123456789 Spamming</code>\n\n"
+            "💡 Reply mode bhi kaam karta hai!</b>",
+            parse_mode="html"
+        )
+    if message.reply_to_message and message.reply_to_message.from_user:
+        k = message.reply_to_message.from_user
+        reason = " ".join(message.command[1:]) if len(message.command) > 1 else "No reason provided"
     else:
-        chat = message.command[1]
-        reason = "No reason Provided"
+        r = message.text.split(None)
+        if len(r) > 2:
+            reason = message.text.split(None, 2)[2]
+            chat_id = message.text.split(None, 2)[1]
+        else:
+            chat_id = message.command[1]
+            reason = "No reason provided"
+        try:
+            chat_id = int(chat_id)
+        except Exception:
+            pass
+        try:
+            k = await bot.get_users(chat_id)
+        except PeerIdInvalid:
+            return await message.reply_text("<b>❌ Invalid user!</b>", parse_mode="html")
+        except Exception as e:
+            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode="html")
+    jar = await db.get_ban_status(k.id)
+    if jar['is_banned']:
+        return await message.reply_text(
+            f"<b>⚠️ {k.mention} pehle se banned hai!\n\n"
+            f"📋 Reason: {jar['ban_reason']}\n\n"
+            f"Unban: <code>/unban {k.id}</code></b>",
+            parse_mode="html"
+        )
+    await db.ban_user(k.id, reason)
+    temp.BANNED_USERS.append(k.id)
+    await message.reply_text(
+        f"<blockquote><b>🔨 User Banned!\n\n"
+        f"👤 User: {k.mention}\n"
+        f"🆔 ID: <code>{k.id}</code>\n"
+        f"📋 Reason: {reason}\n\n"
+        f"Unban: <code>/unban {k.id}</code></b></blockquote>",
+        parse_mode="html"
+    )
     try:
-        chat = int(chat)
-    except:
+        await bot.send_message(
+            k.id,
+            f"<b>🚫 Aapko is bot se ban kar diya gaya hai.\n\n📋 Reason: {reason}</b>",
+            parse_mode="html"
+        )
+    except Exception:
         pass
-    try:
-        k = await bot.get_users(chat)
-    except PeerIdInvalid:
-        return await message.reply("This is an invalid user, make sure ia have met him before.")
-    except IndexError:
-        return await message.reply("This might be a channel, make sure its a user.")
-    except Exception as e:
-        return await message.reply(f'Error - {e}')
-    else:
-        jar = await db.get_ban_status(k.id)
-        if jar['is_banned']:
-            return await message.reply(f"{k.mention} is already banned\nReason: {jar['ban_reason']}")
-        await db.ban_user(k.id, reason)
-        temp.BANNED_USERS.append(k.id)
-        await message.reply(f"Successfully banned {k.mention}")
-    
+
 @Client.on_message(filters.command('unban') & filters.user(ADMINS))
 async def unban_a_user(bot, message):
-    if len(message.command) == 1:
-        return await message.reply('Give me a user id / username')
-    r = message.text.split(None)
-    if len(r) > 2:
-        reason = message.text.split(None, 2)[2]
-        chat = message.text.split(None, 2)[1]
+    if len(message.command) == 1 and not message.reply_to_message:
+        return await message.reply_text(
+            "<b>❌ User ID daalo!\n\n"
+            "✅ Format: <code>/unban user_id</code></b>",
+            parse_mode="html"
+        )
+    if message.reply_to_message and message.reply_to_message.from_user:
+        k = message.reply_to_message.from_user
     else:
-        chat = message.command[1]
-        reason = "No reason Provided"
-    try:
-        chat = int(chat)
-    except:
-        pass
-    try:
-        k = await bot.get_users(chat)
-    except PeerIdInvalid:
-        return await message.reply("This is an invalid user, make sure ia have met him before.")
-    except IndexError:
-        return await message.reply("Thismight be a channel, make sure its a user.")
-    except Exception as e:
-        return await message.reply(f'Error - {e}')
-    else:
-        jar = await db.get_ban_status(k.id)
-        if not jar['is_banned']:
-            return await message.reply(f"{k.mention} is not yet banned.")
-        await db.remove_ban(k.id)
+        chat_id = message.command[1]
+        try:
+            chat_id = int(chat_id)
+        except Exception:
+            pass
+        try:
+            k = await bot.get_users(chat_id)
+        except Exception as e:
+            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode="html")
+    jar = await db.get_ban_status(k.id)
+    if not jar['is_banned']:
+        return await message.reply_text(
+            f"<b>⚠️ {k.mention} banned nahi hai!</b>",
+            parse_mode="html"
+        )
+    await db.remove_ban(k.id)
+    if k.id in temp.BANNED_USERS:
         temp.BANNED_USERS.remove(k.id)
-        await message.reply(f"Successfully unbanned {k.mention}")
+    await message.reply_text(
+        f"<blockquote><b>✅ User Unbanned!\n\n"
+        f"👤 User: {k.mention}\n"
+        f"🆔 ID: <code>{k.id}</code></b></blockquote>",
+        parse_mode="html"
+    )
+    try:
+        await bot.send_message(k.id, "<b>✅ Aapka ban hata diya gaya!</b>", parse_mode="html")
+    except Exception:
+        pass
     
 @Client.on_message(filters.command('users') & filters.user(ADMINS))
 async def list_users(bot, message):
