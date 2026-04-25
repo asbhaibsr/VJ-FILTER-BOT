@@ -1,137 +1,218 @@
 # Don't Remove Credit @VJ_Bots
-# Subscribe YouTube Channel For Amazing Bot @Tech_VJ
-# Ask Doubt on telegram @KingVJ01
+# YouTube Song & Video Downloader
+# Commands: /song <name>  |  /video <link or name>  |  /mp4 <link or name>
 
-
-from __future__ import unicode_literals
-
-import os, requests, asyncio, math, time, wget
-from pyrogram import filters, Client
+import os, asyncio, re
+from pyrogram import Client, filters, enums
 from pyrogram.types import Message
 from info import CHNL_LNK
-from youtube_search import YoutubeSearch
-from youtubesearchpython import SearchVideos
 from yt_dlp import YoutubeDL
 
-@Client.on_message(filters.command(['song', 'mp3']) & filters.private)
-async def song(client, message):
-    user_id = message.from_user.id 
-    user_name = message.from_user.first_name 
-    rpk = "["+user_name+"](tg://user?id="+str(user_id)+")"
-    query = ''
-    for i in message.command[1:]:
-        query += ' ' + str(i)
-    print(query)
-    m = await message.reply(f"**ѕєαrchíng чσur ѕσng...!\n {query}**")
-    ydl_opts = {"format": "bestaudio[ext=m4a]"}
-    try:
-        results = YoutubeSearch(query, max_results=1).to_dict()
-        link = f"https://youtube.com{results[0]['url_suffix']}"
-        title = results[0]["title"][:40]       
-        thumbnail = results[0]["thumbnails"][0]
-        thumb_name = f'thumb{title}.jpg'
-        thumb = requests.get(thumbnail, allow_redirects=True)
-        open(thumb_name, 'wb').write(thumb.content)
-        performer = f"[NETWORKS™]" 
-        duration = results[0]["duration"]
-        url_suffix = results[0]["url_suffix"]
-        views = results[0]["views"]
-    except Exception as e:
-        print(str(e))
-        return await m.edit("Example: /song vaa vaathi song")
-                
-    await m.edit("**dσwnlσαdíng чσur ѕσng...!**")
-    try:
-        with YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(link, download=False)
-            audio_file = ydl.prepare_filename(info_dict)
-            ydl.process_info(info_dict)
+def _sanitize(name: str) -> str:
+    return re.sub(r'[\\/:*?"<>|]', "_", name)
 
-        cap = f"**BY›› [UPDATE]({CHNL_LNK})**"
-        secmul, dur, dur_arr = 1, 0, duration.split(':')
-        for i in range(len(dur_arr)-1, -1, -1):
-            dur += (int(dur_arr[i]) * secmul)
-            secmul *= 60
+def _dur_sec(dur_str: str) -> int:
+    """'3:45' or '1:02:30' -> seconds"""
+    try:
+        parts = [int(x) for x in str(dur_str).split(":")]
+        if len(parts) == 3:
+            return parts[0]*3600 + parts[1]*60 + parts[2]
+        elif len(parts) == 2:
+            return parts[0]*60 + parts[1]
+        return int(parts[0])
+    except Exception:
+        return 0
+
+
+# ── /song  /mp3 ────────────────────────────────────────────────────
+@Client.on_message(filters.command(["song", "mp3"]))
+async def song_cmd(client, message: Message):
+    if len(message.command) < 2:
+        return await message.reply_text(
+            "<b>🎵 Song ka naam do!\n\nExample: <code>/song Kesariya</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    query = " ".join(message.command[1:])
+    status = await message.reply_text(
+        f"🔍 <b>Searching:</b> <code>{query}</code>...",
+        parse_mode=enums.ParseMode.HTML
+    )
+
+    search_opts = {
+        "format": "bestaudio[ext=m4a]/bestaudio/best",
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "default_search": "ytsearch1",
+        "outtmpl": "/tmp/%(id)s.%(ext)s",
+        "postprocessors": [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "mp3",
+            "preferredquality": "192",
+        }],
+    }
+
+    loop = asyncio.get_event_loop()
+    try:
+        await status.edit("<b>⬇️ Downloading song...</b>", parse_mode=enums.ParseMode.HTML)
+
+        def _download():
+            with YoutubeDL(search_opts) as ydl:
+                info = ydl.extract_info(f"ytsearch1:{query}", download=True)
+                if "entries" in info:
+                    info = info["entries"][0]
+                return info
+
+        info = await loop.run_in_executor(None, _download)
+
+        title    = info.get("title", query)[:50]
+        duration = info.get("duration", 0)
+        uploader = info.get("uploader", "Unknown")
+        thumb_url = info.get("thumbnail")
+        vid_id   = info.get("id", "")
+        audio_file = f"/tmp/{vid_id}.mp3"
+
+        # Thumbnail download
+        thumb_file = None
+        if thumb_url:
+            try:
+                import requests
+                r = requests.get(thumb_url, timeout=10)
+                thumb_file = f"/tmp/{vid_id}.jpg"
+                with open(thumb_file, "wb") as tf:
+                    tf.write(r.content)
+            except Exception:
+                thumb_file = None
+
+        caption = (
+            f"🎵 <b>{title}</b>\n"
+            f"👤 {uploader}\n"
+            f"📡 <a href=\"{CHNL_LNK}\">Updates Channel</a>"
+        )
+
+        await status.delete()
         await message.reply_audio(
-            audio_file,
-            caption=cap,            
-            quote=False,
+            audio=audio_file,
+            caption=caption,
+            duration=duration,
+            performer=uploader,
             title=title,
-            duration=dur,
-            performer=performer,
-            thumb=thumb_name
-        )            
-        await m.delete()
+            thumb=thumb_file,
+            parse_mode=enums.ParseMode.HTML
+        )
+
     except Exception as e:
-        await m.edit("**🚫 𝙴𝚁𝚁𝙾𝚁 🚫**")
-        print(e)
-    try:
-        os.remove(audio_file)
-        os.remove(thumb_name)
-    except Exception as e:
-        print(e)
-
-def get_text(message: Message) -> [None,str]:
-    text_to_return = message.text
-    if message.text is None:
-        return None
-    if " " not in text_to_return:
-        return None
-    try:
-        return message.text.split(None, 1)[1]
-    except IndexError:
-        return None
+        await status.edit(
+            f"<b>❌ Error aaya!\n<code>{str(e)[:200]}</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+    finally:
+        for f in [f"/tmp/{vid_id}.mp3", f"/tmp/{vid_id}.jpg"] if "vid_id" in dir() else []:
+            try:
+                if os.path.exists(f):
+                    os.remove(f)
+            except Exception:
+                pass
 
 
+# ── /video  /mp4 ───────────────────────────────────────────────────
 @Client.on_message(filters.command(["video", "mp4"]))
-async def vsong(client, message: Message):
-    urlissed = get_text(message)
-    pablo = await client.send_message(message.chat.id, f"**𝙵𝙸𝙽𝙳𝙸𝙽𝙶 𝚈𝙾𝚄𝚁 𝚅𝙸𝙳𝙴𝙾** `{urlissed}`")
-    if not urlissed:
-        return await pablo.edit("Example: /video Your video link")     
-    search = SearchVideos(f"{urlissed}", offset=1, mode="dict", max_results=1)
-    mi = search.result()
-    mio = mi["search_result"]
-    mo = mio[0]["link"]
-    thum = mio[0]["title"]
-    fridayz = mio[0]["id"]
-    mio[0]["channel"]
-    kekme = f"https://img.youtube.com/vi/{fridayz}/hqdefault.jpg"
-    await asyncio.sleep(0.6)
-    url = mo
-    sedlyf = wget.download(kekme)
-    opts = {
-        "format": "best",
-        "addmetadata": True,
-        "key": "FFmpegMetadata",
-        "prefer_ffmpeg": True,
+async def video_cmd(client, message: Message):
+    if len(message.command) < 2:
+        return await message.reply_text(
+            "<b>🎬 YouTube link ya naam do!\n\n"
+            "Examples:\n"
+            "<code>/video https://youtu.be/xxxxx</code>\n"
+            "<code>/mp4 Avengers Endgame trailer</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    query = " ".join(message.command[1:])
+    is_url = query.startswith("http") or "youtu" in query
+
+    status = await message.reply_text(
+        f"🔍 <b>{'Processing' if is_url else 'Searching'}:</b> <code>{query[:60]}</code>...",
+        parse_mode=enums.ParseMode.HTML
+    )
+
+    vid_opts = {
+        "format": "best[height<=720]/best",
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "outtmpl": "/tmp/%(id)s.%(ext)s",
+        "default_search": "ytsearch1",
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
-        "outtmpl": "%(id)s.mp4",
-        "logtostderr": False,
-        "quiet": True,
     }
-    try:
-        with YoutubeDL(opts) as ytdl:
-            ytdl_data = ytdl.extract_info(url, download=True)
-    except Exception as e:
-        return await pablo.edit_text(f"**𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝙵𝚊𝚒𝚕𝚎𝚍 𝙿𝚕𝚎𝚊𝚜𝚎 𝚃𝚛𝚢 𝙰𝚐𝚊𝚒𝚗..♥️** \n**Error :** `{str(e)}`")       
-    
-    file_stark = f"{ytdl_data['id']}.mp4"
-    capy = f"""**𝚃𝙸𝚃𝙻𝙴 :** [{thum}]({mo})\n**𝚁𝙴𝚀𝚄𝙴𝚂𝚃𝙴𝙳 𝙱𝚈 :** {message.from_user.mention}"""
 
-    await client.send_video(
-        message.chat.id,
-        video=open(file_stark, "rb"),
-        duration=int(ytdl_data["duration"]),
-        file_name=str(ytdl_data["title"]),
-        thumb=sedlyf,
-        caption=capy,
-        supports_streaming=True,        
-        reply_to_message_id=message.id 
-    )
-    await pablo.delete()
-    for files in (sedlyf, file_stark):
-        if files and os.path.exists(files):
-            os.remove(files)
+    loop = asyncio.get_event_loop()
+    vid_id = None
+    try:
+        await status.edit("<b>⬇️ Downloading video...</b>", parse_mode=enums.ParseMode.HTML)
+
+        def _download():
+            src = query if is_url else f"ytsearch1:{query}"
+            with YoutubeDL(vid_opts) as ydl:
+                info = ydl.extract_info(src, download=True)
+                if "entries" in info:
+                    info = info["entries"][0]
+                return info
+
+        info = await loop.run_in_executor(None, _download)
+
+        vid_id   = info.get("id", "video")
+        title    = info.get("title", query)[:60]
+        duration = int(info.get("duration", 0))
+        uploader = info.get("uploader", "Unknown")
+        ext      = info.get("ext", "mp4")
+        vid_url  = info.get("webpage_url", "")
+
+        video_file = f"/tmp/{vid_id}.{ext}"
+
+        # Thumbnail
+        thumb_url  = info.get("thumbnail")
+        thumb_file = None
+        if thumb_url:
+            try:
+                import requests
+                r = requests.get(thumb_url, timeout=10)
+                thumb_file = f"/tmp/{vid_id}_thumb.jpg"
+                with open(thumb_file, "wb") as tf:
+                    tf.write(r.content)
+            except Exception:
+                thumb_file = None
+
+        caption = (
+            f"🎬 <b><a href=\"{vid_url}\">{title}</a></b>\n"
+            f"👤 {uploader}\n"
+            f"📡 <a href=\"{CHNL_LNK}\">Updates Channel</a>"
+        )
+
+        await status.delete()
+        await message.reply_video(
+            video=video_file,
+            caption=caption,
+            duration=duration,
+            thumb=thumb_file,
+            supports_streaming=True,
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    except Exception as e:
+        await status.edit(
+            f"<b>❌ Download fail hua!\n<code>{str(e)[:200]}</code></b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+    finally:
+        for ext2 in ["mp4", "mkv", "webm", "jpg"]:
+            f = f"/tmp/{vid_id}.{ext2}" if vid_id else None
+            if f and os.path.exists(f):
+                try: os.remove(f)
+                except Exception: pass
+        if vid_id:
+            t = f"/tmp/{vid_id}_thumb.jpg"
+            if os.path.exists(t):
+                try: os.remove(t)
+                except Exception: pass
