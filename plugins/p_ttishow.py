@@ -318,18 +318,54 @@ async def list_users(bot, message):
 
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
-    raju = await message.reply('Getting List Of chats')
+    status = await message.reply_text(
+        "<b>⏳ Groups check ho raha hai...</b>",
+        parse_mode="html"
+    )
+
     chats = await db.get_all_chats()
-    out = "Chats Saved In DB Are:\n\n"
+    active_list = []
+    inactive_ids = []
+
     async for chat in chats:
-        out += f"**Title:** `{chat['title']}`\n**- ID:** `{chat['id']}`"
-        if chat['chat_status']['is_disabled']:
-            out += '( Disabled Chat )'
-        out += '\n'
+        chat_id = chat.get("id")
+        title   = chat.get("title", "Unknown")
+        try:
+            await bot.get_chat(chat_id)
+            active_list.append((chat_id, title))
+        except Exception:
+            inactive_ids.append(chat_id)
+
+    # Delete inactive chats from DB
+    for cid in inactive_ids:
+        try:
+            await db.grp.delete_one({"id": cid})
+        except Exception:
+            pass
+
+    total   = len(active_list) + len(inactive_ids)
+    active  = len(active_list)
+    removed = len(inactive_ids)
+
+    out = (
+        f"<b>📊 Groups Report</b>\n\n"
+        f"✅ Active Groups: <b>{active}</b>\n"
+        f"🗑 Removed (inactive): <b>{removed}</b>\n"
+        f"📋 Total was: <b>{total}</b>\n\n"
+    )
+
+    if active_list:
+        out += "<b>Active Groups:</b>\n"
+        for gid, gtitle in active_list[:30]:
+            out += f"• <b>{gtitle}</b> — <code>{gid}</code>\n"
+        if active > 30:
+            out += f"<i>...aur {active - 30} groups</i>\n"
+
     try:
-        await raju.edit_text(out)
-    except MessageTooLong:
-        with open('chats.txt', 'w+') as outfile:
-            outfile.write(out)
-        await message.reply_document('chats.txt', caption="List Of Chats")
+        await status.edit(out, parse_mode="html")
+    except Exception:
+        with open("/tmp/chats.txt", "w") as f:
+            f.write(out.replace("<b>","").replace("</b>","").replace("<code>","").replace("</code>","").replace("<i>","").replace("</i>",""))
+        await message.reply_document("/tmp/chats.txt", caption="Groups List")
+        await status.delete()
 
