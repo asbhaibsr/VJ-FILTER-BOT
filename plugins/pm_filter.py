@@ -2039,30 +2039,9 @@ async def cb_handler(client: Client, query: CallbackQuery):
             parse_mode=enums.ParseMode.HTML
         )
     elif query.data == "subscription":
-        # Handled by commands.py subscription_callback_handler (group=0)
-        # Show premium plan page directly
-        from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
-        plan = PLANS[0]
-        try:
-            await client.edit_message_media(
-                query.message.chat.id,
-                query.message.id,
-                InputMediaPhoto(PAYMENT_QR)
-            )
-            await query.message.edit_caption(
-                caption=_plan_caption(plan),
-                reply_markup=_plan_buttons(0),
-                parse_mode=enums.ParseMode.HTML
-            )
-        except Exception:
-            try:
-                await query.message.edit_text(
-                    text=_plan_caption(plan),
-                    reply_markup=_plan_buttons(0),
-                    parse_mode=enums.ParseMode.HTML
-                )
-            except Exception:
-                pass
+        # commands.py ka subscription_callback_handler handle karega
+        # Yahan kuch mat karo — bas pass karo
+        pass
     elif query.data == "manuelfilter":
         buttons = [[
             InlineKeyboardButton('⟸ Bᴀᴄᴋ', callback_data='filters'),
