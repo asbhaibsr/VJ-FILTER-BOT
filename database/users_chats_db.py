@@ -313,6 +313,31 @@ class Database:
             {"$set": {"used": True, "used_by": user_id, "used_at": datetime.datetime.now()}}
         )
 
+    async def get_user_redeem_today(self, user_id: int) -> int:
+        """Count how many redeem codes this user has used today"""
+        import datetime
+        today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        count = await self.col.count_documents({
+            "used_by": user_id,
+            "used": True,
+            "used_at": {"$gte": today_start}
+        })
+        return count
+
+    async def delete_inactive_chats(self, bot) -> int:
+        """Check all saved chats - delete ones where bot is kicked/blocked"""
+        import asyncio
+        chats = self.grp.find({})
+        deleted = 0
+        async for chat in chats:
+            try:
+                await bot.get_chat(chat["id"])
+            except Exception:
+                await self.grp.delete_one({"id": chat["id"]})
+                deleted += 1
+                await asyncio.sleep(0.3)
+        return deleted
+
     async def set_thumbnail(self, id, file_id):
         await self.col.update_one({'id': int(id)}, {'$set': {'file_id': file_id}})
 
