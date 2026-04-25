@@ -1648,74 +1648,90 @@ def _parse_duration_label(duration_str: str) -> str:
 @Client.on_message(filters.command("genredeem") & filters.user(ADMINS))
 async def gen_redeem_cmd(client, message):
     """
-    Usage: /genredeem <plan_type 1/2/3> <duration>
-    Example: /genredeem 2 10day
-    Duration examples: 10day, 2week, 1month, 1year
+    Usage: /genredeem <count> <plan_type> <duration>
+    Example: /genredeem 5 2 1month  →  5 Gold codes of 1 month
     """
-    if len(message.command) != 3:
+    import re as _re
+
+    USAGE_TEXT = (
+        "<b>📌 Format:</b> <code>/genredeem &lt;count&gt; &lt;plan&gt; &lt;duration&gt;</code>\n\n"
+        "<b>Plans:</b>  <code>1</code>🥉  <code>2</code>🥇  <code>3</code>💎\n"
+        "<b>Duration:</b>  <code>7day</code>  <code>1month</code>  <code>1year</code>\n\n"
+        "<b>Example:</b> <code>/genredeem 5 2 1month</code>"
+    )
+
+    if len(message.command) != 4:
         return await message.reply_text(
-            "<b>❌ Galat Format!\n\n"
-            "✅ Sahi Format:\n"
-            "<code>/genredeem &lt;plan_type&gt; &lt;duration&gt;</code>\n\n"
-            "📌 Plan Types:\n"
-            "  <code>1</code> → 🥉 Bronze Plan\n"
-            "  <code>2</code> → 🥇 Gold Plan\n"
-            "  <code>3</code> → 💎 Diamond Plan\n\n"
-            "⏳ Duration Examples:\n"
-            "  <code>10day</code>  <code>2week</code>  <code>1month</code>  <code>1year</code>\n\n"
-            "🔸 Example: <code>/genredeem 2 1month</code></b>",
+            f"❌ <b>Galat format!</b>\n\n{USAGE_TEXT}",
             parse_mode=enums.ParseMode.HTML
         )
 
+    # Parse count
     try:
-        plan_type = int(message.command[1])
+        count = int(message.command[1])
+        if count < 1 or count > 50:
+            raise ValueError
+    except ValueError:
+        return await message.reply_text(
+            "<b>❌ Count 1 se 50 ke beech hona chahiye!</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # Parse plan type
+    try:
+        plan_type = int(message.command[2])
         if plan_type not in PLAN_NAMES:
             raise ValueError
     except ValueError:
-        return await message.reply_text("<b>❌ Plan type sirf 1, 2 ya 3 ho sakta hai!</b>")
-
-    duration = message.command[2].lower()
-    import re as _re
-    if not _re.match(r'^\d+(day|week|month|year)s?$', duration):
         return await message.reply_text(
-            "<b>❌ Duration format galat hai!\n\n"
-            "Sahi examples: <code>10day</code>, <code>2week</code>, <code>1month</code>, <code>1year</code></b>"
+            "<b>❌ Plan type sirf 1, 2 ya 3 ho sakta hai!</b>",
+            parse_mode=enums.ParseMode.HTML
         )
 
-    # Generate unique code
-    code = "AS-" + secrets.token_hex(4).upper()  # e.g. VJ-A1B2C3D4
+    # Parse duration
+    duration = message.command[3].lower()
+    if not _re.match(r'^\d+(day|week|month|year)s?$', duration):
+        return await message.reply_text(
+            "<b>❌ Duration galat!</b>\n"
+            "Examples: <code>7day</code>  <code>1month</code>  <code>1year</code>",
+            parse_mode=enums.ParseMode.HTML
+        )
 
     emoji, plan_name, _ = PLAN_NAMES[plan_type]
     duration_label = _parse_duration_label(duration)
 
-    # Save to DB
-    await db.save_redeem_code(code, plan_type, duration)
+    # Generate all codes
+    codes = []
+    for _ in range(count):
+        code = "AS-" + secrets.token_hex(4).upper()
+        await db.save_redeem_code(code, plan_type, duration)
+        codes.append(code)
+
+    # Build beautiful message
+    codes_text = "\n".join(f"  <code>{c}</code>" for c in codes)
 
     text = (
         f"<blockquote>"
-        f"✨ <b>Redeem Code Generated!</b> ✨\n\n"
-        f"╔══════════════════════╗\n"
-        f"  {emoji}  <b>{plan_name}</b>  {emoji}\n"
-        f"  ⏳ Duration: <b>{duration_label}</b>\n"
-        f"╚══════════════════════╝\n\n"
-        f"🔑 <b>Your Code:</b>\n"
-        f"<code>{code}</code>\n\n"
-        f"📌 <b>Is code ko /redeem command se use karo:</b>\n"
-        f"<code>/redeem {code}</code>\n\n"
-        f"⚠️ <i>Ye code sirf ek baar use ho sakta hai!</i>"
+        f"✅ <b>{count} Redeem Code{'s' if count > 1 else ''} Ready!</b>\n\n"
+        f"{emoji} <b>{plan_name}</b>  |  ⏳ <b>{duration_label}</b>\n\n"
+        f"🔑 <b>Codes:</b>\n"
+        f"{codes_text}\n\n"
+        f"📌 Use: <code>/redeem &lt;code&gt;</code>\n"
+        f"⚠️ <i>Har code sirf 1 baar use hoga</i>"
         f"</blockquote>"
     )
     await message.reply_text(text, parse_mode=enums.ParseMode.HTML)
 
-    # Log channel pe bhi bhejo
+    # Log channel
     try:
+        log_codes = "\n".join(f"  {c}" for c in codes)
         await client.send_message(
             LOG_CHANNEL,
-            f"🔑 <b>#RedeemGenerated</b>\n\n"
-            f"👤 <b>By:</b> {message.from_user.mention} (<code>{message.from_user.id}</code>)\n"
-            f"📦 <b>Plan:</b> {emoji} {plan_name}\n"
-            f"⏳ <b>Duration:</b> {duration_label}\n"
-            f"🔑 <b>Code:</b> <code>{code}</code>",
+            f"🔑 <b>#RedeemGenerated</b>\n"
+            f"👤 {message.from_user.mention} (<code>{message.from_user.id}</code>)\n"
+            f"📦 {emoji} {plan_name}  |  ⏳ {duration_label}\n"
+            f"🔢 Count: <b>{count}</b>\n"
+            f"<blockquote>{log_codes}</blockquote>",
             parse_mode=enums.ParseMode.HTML
         )
     except Exception:
