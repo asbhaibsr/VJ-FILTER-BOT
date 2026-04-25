@@ -285,6 +285,34 @@ class Database:
         })
         return count
 
+
+    # ── REDEEM CODE SYSTEM ──────────────────────────────────────────
+    async def save_redeem_code(self, code: str, plan_type: int, duration: str, expiry_hours: int = 48):
+        """Save a new redeem code to DB"""
+        import datetime
+        code_data = {
+            "code": code,
+            "plan_type": plan_type,       # 1=Bronze, 2=Gold, 3=Diamond
+            "duration": duration,          # e.g. 10day, 10week, 1year
+            "used": False,
+            "used_by": None,
+            "created_at": datetime.datetime.now(),
+            "expires_at": datetime.datetime.now() + datetime.timedelta(hours=expiry_hours)
+        }
+        await self.col.update_one({"_id": f"redeem_{code}"}, {"$set": code_data}, upsert=True)
+
+    async def get_redeem_code(self, code: str):
+        """Get redeem code info"""
+        return await self.col.find_one({"_id": f"redeem_{code}"})
+
+    async def mark_redeem_used(self, code: str, user_id: int):
+        """Mark code as used by user"""
+        import datetime
+        await self.col.update_one(
+            {"_id": f"redeem_{code}"},
+            {"$set": {"used": True, "used_by": user_id, "used_at": datetime.datetime.now()}}
+        )
+
     async def set_thumbnail(self, id, file_id):
         await self.col.update_one({'id': int(id)}, {'$set': {'file_id': file_id}})
 
