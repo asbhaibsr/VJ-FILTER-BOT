@@ -30,7 +30,7 @@ BOT_TOKEN = environ.get('BOT_TOKEN', "")
 # ══════════════════════════════════════════════════════════════
 #   PICTURES  (Start message ke liye, ek se zyada de sakte ho space se)
 # ══════════════════════════════════════════════════════════════
-PICS = (environ.get('PICS', 'https://envs.sh/Pa2.jpg')).split()
+PICS = (environ.get('PICS', 'https://i.postimg.cc/ZKmRdLtK/Arsad.jpg')).split()
 
 
 # ══════════════════════════════════════════════════════════════
