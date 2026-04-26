@@ -11,7 +11,9 @@ from utils import get_seconds
 
 logger = logging.getLogger(__name__)
 
-# Plans list - aap yahan price/duration badal sakte ho
+# Plans — info.py ke PAYMENT_TEXT se sync hain
+# Price/duration change karna ho to info.py mein PAYMENT_TEXT badlo
+# Ya yahan seedha badlo — dono ek jaisi honi chahiye
 PLANS = [
     {
         "id":            "bronze",
@@ -20,7 +22,12 @@ PLANS = [
         "price":         "₹30",
         "duration":      "1 Week",
         "duration_code": "7day",
-        "features":      ["✅ No Verify Required", "✅ Direct Files", "✅ No Ads", "✅ Fast Access"],
+        "features":      [
+            "✅ No Verify Required",
+            "✅ Direct Files Milti Hain",
+            "✅ No Ads",
+            "✅ Fast Access",
+        ],
     },
     {
         "id":            "gold",
@@ -29,8 +36,13 @@ PLANS = [
         "price":         "₹80",
         "duration":      "1 Month",
         "duration_code": "1month",
-        "features":      ["✅ No Verify Required", "✅ Direct Files", "✅ No Ads",
-                          "✅ Fast Access", "✅ Request in 1hr"],
+        "features":      [
+            "✅ No Verify Required",
+            "✅ Direct Files Milti Hain",
+            "✅ No Ads",
+            "✅ Fast Access",
+            "✅ Movie Request (1hr mein)",
+        ],
     },
     {
         "id":            "diamond",
@@ -39,9 +51,15 @@ PLANS = [
         "price":         "₹250",
         "duration":      "6 Months",
         "duration_code": "6month",
-        "features":      ["✅ No Verify Required", "✅ Direct Files", "✅ No Ads",
-                          "✅ Fast Access", "✅ Request in 1hr",
-                          "✅ VIP Support", "✅ Early Access"],
+        "features":      [
+            "✅ No Verify Required",
+            "✅ Direct Files Milti Hain",
+            "✅ No Ads",
+            "✅ Fast Access",
+            "✅ Movie Request (1hr mein)",
+            "✅ VIP Support",
+            "✅ Early Access to New Movies",
+        ],
     },
 ]
 
@@ -53,10 +71,12 @@ def _plan_caption(plan):
     feats = "\n".join(f"  {f}" for f in plan["features"])
     return (
         f"<b>{plan['emoji']}  {plan['name']}  {plan['emoji']}</b>\n\n"
-        f"💰 <b>Price   :</b> {plan['price']}\n"
-        f"⏳ <b>Duration:</b> {plan['duration']}\n\n"
+        f"💰 <b>Price    :</b> <b>{plan['price']}</b>\n"
+        f"⏳ <b>Duration :</b> <b>{plan['duration']}</b>\n\n"
         f"<b>🎁 Features:</b>\n{feats}\n\n"
-        f"<i>💳 UPI ID: <code>arsadsaifi8272@ibl</code></i>"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"💳 <b>UPI ID:</b> <code>arsadsaifi8272@ibl</code>\n"
+        f"<i>Amount bhejo → Screenshot lo → Neeche Buy button dabao</i>"
     )
 
 
