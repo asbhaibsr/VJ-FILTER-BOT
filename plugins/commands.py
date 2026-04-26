@@ -1393,41 +1393,38 @@ async def check_plans_cmd(client, message):
 #                  PREMIUM & REFERRAL SYSTEM (NEW)
 # ====================================================================
 
-@Client.on_callback_query(filters.regex("subscription"))
+@Client.on_callback_query(filters.regex("^subscription$"))
 async def subscription_callback_handler(client, callback_query):
-    if PREMIUM_AND_REFERAL_MODE == False:
-        await callback_query.answer("Premium mode is currently disabled.", show_alert=True)
-        return
+    if not PREMIUM_AND_REFERAL_MODE:
+        return await callback_query.answer("Premium mode abhi disabled hai.", show_alert=True)
 
-    user_id = callback_query.from_user.id
-    text = (
-        "<b>🆓 ꜰʀᴇᴇ ᴘʀᴇᴍɪᴜᴍ ᴍᴇɴᴜ 🆓</b>\n\n"
-        "✨ <b>Premium paane ke 2 tarike hain:</b>\n\n"
-        "👑 <b>Buy Premium</b> — Direct plan purchase karke premium lo\n"
-        "♻️ <b>Refer & Earn</b> — Dosto ko refer karo aur free premium jito!\n\n"
-        "Neeche se choose karo 👇"
-    )
-    btn = [
-        [InlineKeyboardButton("👑 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ ᴅᴇᴋʜᴏ", callback_data="vj_plan_pg#0")],
-        [InlineKeyboardButton("♻️ ʀᴇꜰᴇʀ ʟɪɴᴋ ʟᴏ", callback_data="get_refer_link")],
-        [InlineKeyboardButton("📢 ꜰʀᴇᴇ ᴘʀᴏᴍᴏᴛɪᴏɴ", url="https://t.me/AdManagerfreebot")],
-        [InlineKeyboardButton("🔙 ʙᴀᴄᴋ", callback_data="start")]
-    ]
+    from plugins.premium_plan import PLANS, _plan_caption, _plan_buttons
+
+    # Seedha pehla plan + QR dikhao (info.py wala QR)
+    plan    = PLANS[0]
+    caption = _plan_caption(plan)
+    markup  = _plan_buttons(0)
+
     try:
-        await callback_query.message.edit_caption(
-            caption=text,
-            reply_markup=InlineKeyboardMarkup(btn),
+        await callback_query.message.delete()
+    except Exception:
+        pass
+
+    try:
+        await client.send_photo(
+            callback_query.message.chat.id,
+            photo=PAYMENT_QR,
+            caption=caption,
+            reply_markup=markup,
             parse_mode=enums.ParseMode.HTML
         )
     except Exception:
-        try:
-            await callback_query.message.edit_text(
-                text=text,
-                reply_markup=InlineKeyboardMarkup(btn),
-                parse_mode=enums.ParseMode.HTML
-            )
-        except Exception:
-            pass
+        await client.send_message(
+            callback_query.message.chat.id,
+            caption,
+            reply_markup=markup,
+            parse_mode=enums.ParseMode.HTML
+        )
     await callback_query.answer()
 
 # Also handle old buy_premium_plan callback (backward compat)
