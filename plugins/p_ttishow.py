@@ -319,53 +319,66 @@ async def list_users(bot, message):
 @Client.on_message(filters.command('chats') & filters.user(ADMINS))
 async def list_chats(bot, message):
     status = await message.reply_text(
-        "<b>⏳ Groups check ho raha hai...</b>",
+        "<b>⏳ Groups check ho raha hai, thoda wait karo...</b>",
         parse_mode="html"
     )
 
-    chats = await db.get_all_chats()
-    active_list = []
+    active_list  = []
     inactive_ids = []
 
-    async for chat in chats:
-        chat_id = chat.get("id")
-        title   = chat.get("title", "Unknown")
+    try:
+        all_chats = await db.grp.find({}).to_list(length=None)
+    except Exception:
         try:
-            await bot.get_chat(chat_id)
+            all_chats = []
+            async for c in db.grp.find({}):
+                all_chats.append(c)
+        except Exception:
+            all_chats = []
+
+    for chat in all_chats:
+        chat_id = chat.get("id")
+        if not chat_id:
+            continue
+        title = chat.get("title", "Unknown")
+        try:
+            await bot.get_chat(int(chat_id))
             active_list.append((chat_id, title))
         except Exception:
             inactive_ids.append(chat_id)
 
-    # Delete inactive chats from DB
     for cid in inactive_ids:
         try:
             await db.grp.delete_one({"id": cid})
         except Exception:
             pass
 
-    total   = len(active_list) + len(inactive_ids)
+    total   = len(all_chats)
     active  = len(active_list)
     removed = len(inactive_ids)
 
     out = (
         f"<b>📊 Groups Report</b>\n\n"
-        f"✅ Active Groups: <b>{active}</b>\n"
+        f"✅ Active: <b>{active}</b>\n"
         f"🗑 Removed (inactive): <b>{removed}</b>\n"
-        f"📋 Total was: <b>{total}</b>\n\n"
+        f"📋 Total: <b>{total}</b>\n\n"
     )
 
     if active_list:
-        out += "<b>Active Groups:</b>\n"
-        for gid, gtitle in active_list[:30]:
+        out += "<b>🔹 Active Groups:</b>\n"
+        for gid, gtitle in active_list[:40]:
             out += f"• <b>{gtitle}</b> — <code>{gid}</code>\n"
-        if active > 30:
-            out += f"<i>...aur {active - 30} groups</i>\n"
+        if active > 40:
+            out += f"<i>...aur {active - 40} groups</i>\n"
+    else:
+        out += "<i>Koi active group nahi mila.</i>"
 
     try:
         await status.edit(out, parse_mode="html")
     except Exception:
+        clean = out.replace("<b>","").replace("</b>","").replace("<code>","").replace("</code>","").replace("<i>","").replace("</i>","")
         with open("/tmp/chats.txt", "w") as f:
-            f.write(out.replace("<b>","").replace("</b>","").replace("<code>","").replace("</code>","").replace("<i>","").replace("</i>",""))
+            f.write(clean)
         await message.reply_document("/tmp/chats.txt", caption="Groups List")
         await status.delete()
 
