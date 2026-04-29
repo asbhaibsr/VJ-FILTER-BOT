@@ -1398,30 +1398,46 @@ async def subscription_callback_handler(client, callback_query):
     if not PREMIUM_AND_REFERAL_MODE:
         return await callback_query.answer("Premium mode abhi disabled hai.", show_alert=True)
 
-    from plugins.premium_plan import PLANS, _plan_caption, _plan_buttons
+    user_id = callback_query.from_user.id
+    referral_link = f"https://t.me/{temp.U_NAME}?start=AS-{user_id}"
 
-    # Seedha pehla plan + QR dikhao (info.py wala QR)
-    plan    = PLANS[0]
-    caption = _plan_caption(plan)
-    markup  = _plan_buttons(0)
+    text = (
+        f"<b>🌟 Premium & Referral System 🌟</b>\n\n"
+        f"<b>🎯 Do Options Hain:</b>\n\n"
+        f"<b>1️⃣ 💸 Refer & Earn (Free Premium)</b>\n"
+        f"   ➤ {REFERAL_COUNT} logo ko refer karo → <b>{REFERAL_PREMEIUM_TIME}</b> Free Premium milega!\n"
+        f"   ➤ Apna refer link share karo aur earn karo 🎁\n\n"
+        f"<b>2️⃣ 💎 Buy Premium (Direct)</b>\n"
+        f"   ➤ Seedha premium kharido aur unlimited enjoy karo!\n"
+        f"   ➤ No ads | Fast access | Priority support ⚡\n\n"
+        f"<i>Neeche se apna option chuno 👇</i>"
+    )
+
+    buttons = [
+        [
+            InlineKeyboardButton("🔗 Refer Link Pao", callback_data="get_refer_link"),
+            InlineKeyboardButton("💎 Buy Premium", callback_data="buy_premium_plan"),
+        ],
+        [
+            InlineKeyboardButton("🔙 Back", callback_data="start")
+        ]
+    ]
+    markup = InlineKeyboardMarkup(buttons)
 
     try:
-        await callback_query.message.delete()
-    except Exception:
-        pass
-
-    try:
-        await client.send_photo(
-            callback_query.message.chat.id,
-            photo=PAYMENT_QR,
-            caption=caption,
+        await callback_query.message.edit_text(
+            text=text,
             reply_markup=markup,
             parse_mode=enums.ParseMode.HTML
         )
     except Exception:
+        try:
+            await callback_query.message.delete()
+        except Exception:
+            pass
         await client.send_message(
             callback_query.message.chat.id,
-            caption,
+            text,
             reply_markup=markup,
             parse_mode=enums.ParseMode.HTML
         )
