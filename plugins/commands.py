@@ -386,6 +386,27 @@ async def start(client, message):
         await k.edit_text("<b>✅ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ ɪs sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ</b>")
         return
 
+    elif data.startswith("sv_"):
+        # Blogger verify se aata hai: sv_UID_TOKEN
+        # Theme mein: ?start=sv_UID_TOKEN
+        try:
+            parts = data.split("_", 2)  # ['sv', 'UID', 'TOKEN']
+            userid = parts[1]
+            token = parts[2] if len(parts) > 2 else ""
+        except (IndexError, ValueError):
+            return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
+        if str(message.from_user.id) != str(userid):
+            return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
+        is_valid = await check_token(client, userid, token)
+        if is_valid == True:
+            text = "<b>✅ हे {}!\n\nआपकी वेरिफिकेशन सफल रही है 🎉\nअब आप अगले 24 घंटे तक बॉट को बिना किसी लिमिट के फ्री में इस्तेमाल कर सकते हैं।</b>"
+            if PREMIUM_AND_REFERAL_MODE == True:
+                text += "<b>\n\n💎 अगर आप बॉट को बिना रुकावट और बिना वेरिफिकेशन के इस्तेमाल करना चाहते हैं,\nतो प्रीमियम लेना सबसे अच्छा तरीका है।\n\n📌 प्रीमियम में आपको सीधी फाइल, तेज स्पीड और पूरा एक्सेस मिलेगा।\n\n👉 प्रीमियम प्लान देखने के लिए /plan टाइप करें।</b>"
+            await message.reply_text(text=text.format(message.from_user.mention), protect_content=True)
+            await verify_user(client, userid, token)
+        else:
+            return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
+
     elif data.split("-", 1)[0] == "verify":
         userid = data.split("-", 2)[1]
         token = data.split("-", 3)[2]
