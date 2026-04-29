@@ -179,6 +179,23 @@ VERIFY_SECOND_SHORTNER  = _bool(environ.get('VERIFY_SECOND_SHORTNER'), default=F
 VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', '')
 VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
 
+# ══════════════════════════════════════════════════════════════
+#   BLOGGER VERIFY SYSTEM (Shortlink ki jagah Blogger post use hogi)
+# ══════════════════════════════════════════════════════════════
+# BLOGGER_VERIFY = True  → Shortlink ki jagah Blogger post se verify hoga
+# BLOGGER_VERIFY = False → Normal shortlink se verify hoga (purana tarika)
+BLOGGER_VERIFY       = _bool(environ.get('BLOGGER_VERIFY'), default=False)
+
+# Tumhara Blogger blog ka base URL (last mein / zaroor lagao)
+# Example: 'https://asbhaibsr.blogspot.com/'
+BLOGGER_BASE_URL     = environ.get('BLOGGER_BASE_URL', '')
+
+# Google Sheet CSV export URL — random post links yahan se aayenge
+# Sheet mein sirf ek column honi chahiye: Post URL (header ke bina)
+# Sheet → File → Share → Publish to web → CSV → us URL ko paste karo
+# Example: 'https://docs.google.com/spreadsheets/d/SHEET_ID/export?format=csv&gid=0'
+GOOGLE_SHEET_CSV_URL = environ.get('GOOGLE_SHEET_CSV_URL', '')
+
 
 # ══════════════════════════════════════════════════════════════
 #   SHORTLINK (Group-wise shortlink for file buttons)
