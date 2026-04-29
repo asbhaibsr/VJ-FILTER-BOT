@@ -564,8 +564,7 @@ async def check_token(bot, userid, token):
 async def get_random_blogger_post() -> str:
     """
     Google Sheet CSV se ek random Blogger post URL fetch karta hai.
-    Sheet mein Column B mein URLs honi chahiye (partial ya full).
-    Agar URL 'http' se start nahi karta to BLOGGER_BASE_URL se complete kiya jaata hai.
+    Saare columns mein se URLs collect karta hai — jis column mein bhi ho.
     GOOGLE_SHEET_CSV_URL aur BLOGGER_BASE_URL env vars mein set karo.
     """
     try:
@@ -577,33 +576,24 @@ async def get_random_blogger_post() -> str:
             async with session.get(GOOGLE_SHEET_CSV_URL, timeout=aiohttp.ClientTimeout(total=8)) as resp:
                 text = await resp.text()
         urls = []
+        base = (BLOGGER_BASE_URL or "").rstrip("/")
         for line in text.splitlines():
             if not line.strip():
                 continue
-            # CSV ke columns split karo (comma se)
+            # Saare columns check karo
             cols = [c.strip().strip('"') for c in line.split(',')]
-            # Column B = index 1, agar sirf ek column hai to index 0
-            raw = ""
-            if len(cols) >= 2 and cols[1]:
-                raw = cols[1]
-            elif len(cols) >= 1 and cols[0]:
-                raw = cols[0]
-            if not raw:
-                continue
-            # Agar partial URL hai (blogspot.com se start) to https:// lagao
-            if raw.startswith("http"):
-                urls.append(raw)
-            elif raw.startswith("blogspot.com") or raw.startswith("www."):
-                urls.append("https://" + raw)
-            elif "/" in raw and not raw.startswith("#"):
-                # Partial path — BLOGGER_BASE_URL se join karo
-                base = (BLOGGER_BASE_URL or "").rstrip("/")
-                path = raw.lstrip("/")
-                if base:
-                    urls.append(f"{base}/{path}")
+            for raw in cols:
+                if not raw:
+                    continue
+                if raw.startswith("http"):
+                    urls.append(raw)
+                elif raw.startswith("blogspot.com") or raw.startswith("www."):
+                    urls.append("https://" + raw)
+                elif "/" in raw and not raw.startswith("#") and base:
+                    urls.append(f"{base}/{raw.lstrip('/')}")
         if not urls:
             logger.warning("Google Sheet mein koi valid URL nahi mili.")
-            return BLOGGER_BASE_URL or ""
+            return base or ""
         return random.choice(urls)
     except Exception as e:
         logger.error(f"Blogger post fetch error: {e}")
