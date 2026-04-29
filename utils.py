@@ -561,6 +561,59 @@ async def check_token(bot, userid, token):
     else:
         return False
 
+async def get_random_blogger_post() -> str:
+    """
+    Google Sheet CSV se ek random Blogger post URL fetch karta hai.
+    Sheet mein Column B mein URLs honi chahiye (partial ya full).
+    Agar URL 'http' se start nahi karta to BLOGGER_BASE_URL se complete kiya jaata hai.
+    GOOGLE_SHEET_CSV_URL aur BLOGGER_BASE_URL env vars mein set karo.
+    """
+    try:
+        from info import GOOGLE_SHEET_CSV_URL, BLOGGER_BASE_URL
+        if not GOOGLE_SHEET_CSV_URL:
+            logger.warning("GOOGLE_SHEET_CSV_URL set nahi hai, BLOGGER_BASE_URL use ho raha hai.")
+            return BLOGGER_BASE_URL or ""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(GOOGLE_SHEET_CSV_URL, timeout=aiohttp.ClientTimeout(total=8)) as resp:
+                text = await resp.text()
+        urls = []
+        for line in text.splitlines():
+            if not line.strip():
+                continue
+            # CSV ke columns split karo (comma se)
+            cols = [c.strip().strip('"') for c in line.split(',')]
+            # Column B = index 1, agar sirf ek column hai to index 0
+            raw = ""
+            if len(cols) >= 2 and cols[1]:
+                raw = cols[1]
+            elif len(cols) >= 1 and cols[0]:
+                raw = cols[0]
+            if not raw:
+                continue
+            # Agar partial URL hai (blogspot.com se start) to https:// lagao
+            if raw.startswith("http"):
+                urls.append(raw)
+            elif raw.startswith("blogspot.com") or raw.startswith("www."):
+                urls.append("https://" + raw)
+            elif "/" in raw and not raw.startswith("#"):
+                # Partial path — BLOGGER_BASE_URL se join karo
+                base = (BLOGGER_BASE_URL or "").rstrip("/")
+                path = raw.lstrip("/")
+                if base:
+                    urls.append(f"{base}/{path}")
+        if not urls:
+            logger.warning("Google Sheet mein koi valid URL nahi mili.")
+            return BLOGGER_BASE_URL or ""
+        return random.choice(urls)
+    except Exception as e:
+        logger.error(f"Blogger post fetch error: {e}")
+        try:
+            from info import BLOGGER_BASE_URL
+            return BLOGGER_BASE_URL or ""
+        except Exception:
+            return ""
+
+
 async def get_token(bot, userid, link):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
@@ -568,6 +621,46 @@ async def get_token(bot, userid, link):
         await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
+
+    # ── BLOGGER VERIFY MODE ─────────────────────────────────────────────
+    # Agar BLOGGER_VERIFY = True hai to shortlink ki jagah Blogger post
+    # ka URL diya jaayega. User wahan ja ke verify karega, tab movie milegi.
+    try:
+        from info import BLOGGER_VERIFY, BLOGGER_BASE_URL
+    except ImportError:
+        BLOGGER_VERIFY = False
+        BLOGGER_BASE_URL = ""
+
+    if BLOGGER_VERIFY:
+        # Bot ka start link jo verify ke baad open hoga
+        bot_verify_link = f"{link}verify-{user.id}-{token}"
+        # Random Blogger post fetch karo (Google Sheet se)
+        blogger_post_url = await get_random_blogger_post()
+        if not blogger_post_url:
+            # Fallback: BLOGGER_BASE_URL use karo
+            blogger_post_url = BLOGGER_BASE_URL or link
+        # Blogger post URL mein verify params add karo
+        # Format: https://yourblog.blogspot.com/post-name/?uid=USER_ID&token=TOKEN&bot=BOT_USERNAME
+        sep = "&" if "?" in blogger_post_url else "?"
+        import urllib.parse
+        # Bot username (temp se lena) — late import to avoid circular
+        try:
+            from utils import temp as _temp
+            bot_username = _temp.U_NAME
+        except Exception:
+            try:
+                from TechVJ.bot import StreamBot
+                bot_username = (await StreamBot.get_me()).username
+            except Exception:
+                bot_username = ""
+        params = urllib.parse.urlencode({
+            "uid": user.id,
+            "token": token,
+            "bot": bot_username,
+        })
+        final_url = f"{blogger_post_url}{sep}{params}"
+        return str(final_url)
+    # ── NORMAL SHORTLINK MODE (purana tarika, unchanged) ────────────────
     link = f"{link}verify-{user.id}-{token}"
     shortened_verify_url = await get_verify_shorted_link(link, VERIFY_SHORTLINK_URL, VERIFY_SHORTLINK_API)
     if VERIFY_SECOND_SHORTNER == True:
