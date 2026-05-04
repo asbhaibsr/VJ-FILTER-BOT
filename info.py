@@ -184,7 +184,7 @@ VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
 # ══════════════════════════════════════════════════════════════
 # BLOGGER_VERIFY = True  → Shortlink ki jagah Blogger post se verify hoga
 # BLOGGER_VERIFY = False → Normal shortlink se verify hoga (purana tarika)
-BLOGGER_VERIFY       = _bool(environ.get('BLOGGER_VERIFY'), default=True)
+BLOGGER_VERIFY       = _bool(environ.get('BLOGGER_VERIFY'), default=False)
 
 # Tumhara Blogger blog ka base URL (last mein / zaroor lagao)
 # Example: 'https://asbhaibsr.blogspot.com/'
