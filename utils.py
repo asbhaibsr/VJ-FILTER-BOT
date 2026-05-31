@@ -18,6 +18,86 @@ from bs4 import BeautifulSoup
 from shortzy import Shortzy
 
 logger = logging.getLogger(__name__)
+
+# ══════════════════════════════════════════════════════════════
+#   ANTI-SPAM RATE LIMITER
+# ══════════════════════════════════════════════════════════════
+import time as _time
+
+_SPAM_TRACKER  = {}   # user_id -> [timestamp, timestamp, ...]
+_SPAM_BLOCKED  = {}   # user_id -> blocked_until (float timestamp)
+_PM_SEARCH_CTR = {}   # user_id -> {"date": "YYYY-MM-DD", "count": int}
+
+async def is_spam(user_id: int) -> bool:
+    """Returns True if user is spamming (should be ignored)"""
+    try:
+        from info import SPAM_MSG_LIMIT, SPAM_TIME_WINDOW, SPAM_BLOCK_TIME
+    except ImportError:
+        SPAM_MSG_LIMIT, SPAM_TIME_WINDOW, SPAM_BLOCK_TIME = 5, 5, 60
+
+    now = _time.time()
+
+    # Check if still blocked
+    if user_id in _SPAM_BLOCKED:
+        if now < _SPAM_BLOCKED[user_id]:
+            return True
+        else:
+            del _SPAM_BLOCKED[user_id]
+
+    # Track message timestamps
+    timestamps = _SPAM_TRACKER.get(user_id, [])
+    timestamps = [t for t in timestamps if now - t < SPAM_TIME_WINDOW]
+    timestamps.append(now)
+    _SPAM_TRACKER[user_id] = timestamps
+
+    # Block if exceeded limit
+    if len(timestamps) >= SPAM_MSG_LIMIT:
+        _SPAM_BLOCKED[user_id] = now + SPAM_BLOCK_TIME
+        _SPAM_TRACKER[user_id] = []
+        return True
+    return False
+
+
+async def check_pm_search_limit(user_id: int) -> tuple:
+    """
+    Returns (allowed: bool, remaining: int)
+    Premium users always allowed.
+    Free users: limited by PM_SEARCH_DAILY_LIMIT per day (IST).
+    """
+    try:
+        from info import PM_SEARCH_DAILY_LIMIT
+        from database.users_chats_db import db
+        import pytz
+        from datetime import date
+    except ImportError:
+        return True, 999
+
+    if PM_SEARCH_DAILY_LIMIT <= 0:
+        return True, 999
+
+    # Premium users unlimited
+    try:
+        if await db.has_premium_access(user_id):
+            return True, 999
+    except Exception:
+        pass
+
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today().strftime("%Y-%m-%d")
+    data  = _PM_SEARCH_CTR.get(user_id, {"date": "", "count": 0})
+
+    if data["date"] != today:
+        data = {"date": today, "count": 0}
+
+    if data["count"] >= PM_SEARCH_DAILY_LIMIT:
+        return False, 0
+
+    data["count"] += 1
+    _PM_SEARCH_CTR[user_id] = data
+    remaining = PM_SEARCH_DAILY_LIMIT - data["count"]
+    return True, remaining
+
+
 logger.setLevel(logging.INFO)
 join_db = JoinReqs
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))")
