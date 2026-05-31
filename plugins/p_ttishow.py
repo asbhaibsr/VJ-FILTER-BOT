@@ -159,29 +159,67 @@ async def re_enable_chat(bot, message):
 
 @Client.on_message(filters.command('stats') & filters.incoming)
 async def get_ststs(bot, message):
-    rju = await message.reply('Fetching stats..')
+    rju = await message.reply('<b>⏳ Stats fetch ho rahi hain...</b>', parse_mode="html")
     try:
-        total_users = await db.total_users_count()
-        totl_chats = await db.total_chat_count()
-        filesp = col.count_documents({})
-        stats = vjdb.command('dbStats')
-        used_dbSize = (stats['dataSize']/(1024*1024))+(stats['indexSize']/(1024*1024))
-        free_dbSize = 512-used_dbSize
-        
+        total_users  = await db.total_users_count()
+        totl_chats   = await db.total_chat_count()
+        premium_cnt  = await db.all_premium_users()
+        filesp       = col.count_documents({})
+        stats        = vjdb.command('dbStats')
+        used_dbSize  = (stats['dataSize']/(1024*1024)) + (stats['indexSize']/(1024*1024))
+        free_dbSize  = 512 - used_dbSize
+
+        # Top 3 searches
+        try:
+            top_s = await db.get_top_searches(3)
+            if top_s:
+                top_lines = " | ".join([f"{d['query']} ({d['count']}x)" for d in top_s])
+            else:
+                top_lines = "No data yet"
+        except Exception:
+            top_lines = "N/A"
+
+        # Redeem code summary
+        try:
+            codes_info = await db.get_all_codes_count()
+            codes_str  = f"Active: {codes_info['active']} | Used: {codes_info['used']}"
+        except Exception:
+            codes_str = "N/A"
+
+        base_stats = (
+            "<b>📊 Bot Statistics</b>\n\n"
+            f"👥 <b>Total Users:</b> <code>{total_users}</code>\n"
+            f"🏘 <b>Total Groups:</b> <code>{totl_chats}</code>\n"
+            f"💎 <b>Premium Users:</b> <code>{premium_cnt}</code>\n"
+            f"🎬 <b>Total Files:</b> <code>{filesp}</code>\n\n"
+            f"🔑 <b>Redeem Codes:</b> {codes_str}\n"
+            f"🔥 <b>Top Searches:</b> {top_lines}\n\n"
+            f"🗄 <b>DB Used:</b> <code>{round(used_dbSize, 2)} MB</code>\n"
+            f"💾 <b>DB Free:</b> <code>{round(free_dbSize, 2)} MB</code>"
+        )
+
         if MULTIPLE_DATABASE == False:
-            await rju.edit(script.SEC_STATUS_TXT.format(total_users, totl_chats, filesp, round(used_dbSize, 2), round(free_dbSize, 2)))
-            return 
-            
-        totalsec = sec_col.count_documents({})   
-        stats2 = sec_db.command('dbStats')
-        used_dbSize2 = (stats2['dataSize']/(1024*1024))+(stats2['indexSize']/(1024*1024))
-        free_dbSize2 = 512-used_dbSize2
-        stats3 = mydb.command('dbStats')
-        used_dbSize3 = (stats3['dataSize']/(1024*1024))+(stats3['indexSize']/(1024*1024))
-        free_dbSize3 = 512-used_dbSize3
-        await rju.edit(script.STATUS_TXT.format((int(filesp)+int(totalsec)), total_users, totl_chats, filesp, round(used_dbSize, 2), round(free_dbSize, 2), totalsec, round(used_dbSize2, 2), round(free_dbSize2, 2), round(used_dbSize3, 2), round(free_dbSize3, 2)))
+            await rju.edit(base_stats, parse_mode="html")
+            return
+
+        totalsec    = sec_col.count_documents({})
+        stats2      = sec_db.command('dbStats')
+        used_dbSize2 = (stats2['dataSize']/(1024*1024)) + (stats2['indexSize']/(1024*1024))
+        free_dbSize2 = 512 - used_dbSize2
+        stats3      = mydb.command('dbStats')
+        used_dbSize3 = (stats3['dataSize']/(1024*1024)) + (stats3['indexSize']/(1024*1024))
+        free_dbSize3 = 512 - used_dbSize3
+
+        multi_stats = base_stats + (
+            f"\n\n<b>📦 Multi-DB Breakdown:</b>\n"
+            f"DB1 Files: <code>{filesp}</code> | DB2 Files: <code>{totalsec}</code>\n"
+            f"DB2: Used <code>{round(used_dbSize2,2)} MB</code> | Free <code>{round(free_dbSize2,2)} MB</code>\n"
+            f"DB3: Used <code>{round(used_dbSize3,2)} MB</code> | Free <code>{round(free_dbSize3,2)} MB</code>"
+        )
+        await rju.edit(multi_stats, parse_mode="html")
+
     except Exception as e:
-        await rju.edit(f"Error - {e}")
+        await rju.edit(f"<b>Error:</b> <code>{e}</code>", parse_mode="html")
 
 @Client.on_message(filters.command('invite') & filters.user(ADMINS))
 async def gen_invite(bot, message):
