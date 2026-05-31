@@ -37,6 +37,22 @@ SPELL_CHECK = {}
 
 @Client.on_message(filters.group & filters.text & filters.incoming)
 async def give_filter(client, message):
+    # ── MAINTENANCE MODE CHECK ──────────────────────────────
+    try:
+        from info import MAINTENANCE_MODE, ADMINS as _ADMINS
+        _uid = message.from_user.id if message.from_user else None
+        if MAINTENANCE_MODE and _uid and _uid not in _ADMINS:
+            return
+    except Exception:
+        pass
+    # ── ANTI-SPAM CHECK ─────────────────────────────────────
+    try:
+        from utils import is_spam
+        _spam_uid = message.from_user.id if message.from_user else None
+        if _spam_uid and await is_spam(_spam_uid):
+            return
+    except Exception:
+        pass
     if message.chat.id != SUPPORT_CHAT_ID:
         settings = await get_settings(message.chat.id)
         chatid = message.chat.id 
@@ -95,14 +111,69 @@ async def pm_text(bot, message):
     content = message.text
     user = message.from_user.first_name
     user_id = message.from_user.id
-    if content.startswith("/") or content.startswith("#"): return  # ignore commands and hashtags
+    if content.startswith("/") or content.startswith("#"): return  # ignore commands
+
+    # ── MAINTENANCE MODE CHECK ──────────────────────────────
+    try:
+        from info import MAINTENANCE_MODE, ADMINS
+        if MAINTENANCE_MODE and user_id not in ADMINS:
+            maint_msg = await db.get_maintenance_msg()
+            await message.reply_text(f"<b>{maint_msg}</b>", parse_mode="html")
+            return
+    except Exception:
+        pass
+
+    # ── ANTI-SPAM CHECK ─────────────────────────────────────
+    try:
+        from utils import is_spam
+        if await is_spam(user_id):
+            return  # silently ignore spammer
+    except Exception:
+        pass
+
     # Skip if user is in payment submission flow
     if user_id in _PEND_PAY:
         return
+
     if PM_SEARCH == True:
+        # ── PM SEARCH LIMIT CHECK ───────────────────────────
+        try:
+            from utils import check_pm_search_limit
+            allowed, remaining = await check_pm_search_limit(user_id)
+            if not allowed:
+                from info import PREMIUM_AND_REFERAL_MODE
+                limit_msg = (
+                    "<b>⚠️ Aapki aaj ki free search limit khatam ho gayi!</b>\n\n"
+                    "🔄 Kal dobara try karo, ya premium lo unlimited searches ke liye."
+                )
+                if PREMIUM_AND_REFERAL_MODE:
+                    from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+                    btn = InlineKeyboardMarkup([[
+                        InlineKeyboardButton("💎 Get Premium", callback_data="buy_premium"),
+                        InlineKeyboardButton("🆓 Free Trial", callback_data="get_trail")
+                    ]])
+                    await message.reply_text(limit_msg, reply_markup=btn, parse_mode="html")
+                else:
+                    await message.reply_text(limit_msg, parse_mode="html")
+                return
+            # Show warning when 3 searches remain
+            if 0 < remaining <= 3:
+                await message.reply_text(
+                    f"<b>⚠️ Sirf <u>{remaining}</u> searches bacha hai aaj ke liye!</b>",
+                    parse_mode="html"
+                )
+        except Exception:
+            pass
+
         ai_search = True
         reply_msg = await bot.send_message(message.from_user.id, f"<b><i>Searching For {content} 🔍</i></b>", reply_to_message_id=message.id)
         await auto_filter(bot, content, message, reply_msg, ai_search)
+
+        # ── SEARCH ANALYTICS TRACK ──────────────────────────
+        try:
+            await db.track_search(content)
+        except Exception:
+            pass
     
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
