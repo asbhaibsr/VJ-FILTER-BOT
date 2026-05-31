@@ -485,9 +485,13 @@ def humanbytes(size):
 
 
 async def get_clone_shortlink(link, url, api):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
-    return link
+    try:
+        shortzy = Shortzy(api_key=api, base_site=url)
+        link = await shortzy.convert(link)
+        return link
+    except Exception as e:
+        logger.error(f"Shortlink conversion failed ({url}): {e}")
+        return link
                            
 async def get_shortlink(chat_id, link):
     settings = await get_settings(chat_id) #fetching settings for group
@@ -515,9 +519,13 @@ async def get_shortlink(chat_id, link):
             logger.error(e)
             return link
     else:
-        shortzy = Shortzy(api_key=API, base_site=URL)
-        link = await shortzy.convert(link)
-        return link
+        try:
+            shortzy = Shortzy(api_key=API, base_site=URL)
+            link = await shortzy.convert(link)
+            return link
+        except Exception as e:
+            logger.error(f"Shortlink conversion failed ({URL}): {e}")
+            return link
     
 async def get_tutorial(chat_id):
     settings = await get_settings(chat_id) #fetching settings for group
@@ -541,9 +549,13 @@ async def get_verify_shorted_link(link, url, api):
             logger.error(e)
             return link
     else:
-        shortzy = Shortzy(api_key=API, base_site=URL)
-        link = await shortzy.convert(link)
-        return link
+        try:
+            shortzy = Shortzy(api_key=API, base_site=URL)
+            link = await shortzy.convert(link)
+            return link
+        except Exception as e:
+            logger.error(f"Shortlink conversion failed ({URL}): {e}")
+            return link
         
 async def check_token(bot, userid, token):
     user = await bot.get_users(userid)
