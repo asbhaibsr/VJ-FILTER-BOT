@@ -1360,6 +1360,119 @@ async def give_premium_cmd_handler(client, message):
     else:
         await message.reply_text("<b>Usage: /add_premium user_id time \n\nExample /add_premium 1252789 10day \n\n(e.g. for time units '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year')</b>")
         
+
+@Client.on_message(filters.command("bulk_premium") & filters.user(ADMINS), group=-1)
+async def bulk_premium_cmd(client, message):
+    """
+    /bulk_premium user1 user2 user3 ... duration
+    Example: /bulk_premium 123456 789012 345678 1month
+    Last argument = duration, rest = user IDs
+    """
+    if PREMIUM_AND_REFERAL_MODE == False:
+        return await message.reply_text("<b>Premium mode disabled hai.</b>", parse_mode=enums.ParseMode.HTML)
+
+    args = message.command[1:]  # skip 'bulk_premium'
+
+    if len(args) < 2:
+        return await message.reply_text(
+            "<b>📌 Usage:</b>\n"
+            "<code>/bulk_premium user_id1 user_id2 ... duration</code>\n\n"
+            "<b>Examples:</b>\n"
+            "<code>/bulk_premium 123456789 987654321 1month</code>\n"
+            "<code>/bulk_premium 111 222 333 7day</code>\n\n"
+            "<b>Duration formats:</b> 1day, 7day, 1month, 6month, 1year",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    duration   = args[-1]        # Last arg = duration
+    user_ids_s = args[:-1]       # All before last = user IDs
+
+    # Validate duration
+    seconds = await get_seconds(duration)
+    if seconds <= 0:
+        return await message.reply_text(
+            f"<b>❌ Invalid duration:</b> <code>{duration}</code>\n"
+            "Use: 1day, 7day, 1month, 6month, 1year",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # Parse user IDs
+    valid_ids = []
+    invalid   = []
+    for uid_s in user_ids_s:
+        try:
+            valid_ids.append(int(uid_s))
+        except ValueError:
+            invalid.append(uid_s)
+
+    if not valid_ids:
+        return await message.reply_text(
+            "<b>❌ Koi valid user ID nahi mila!</b>\n"
+            "User IDs numbers hone chahiye.",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    sts = await message.reply_text(
+        f"<b>⏳ {len(valid_ids)} users ko premium de raha hoon ({duration})...</b>",
+        parse_mode=enums.ParseMode.HTML
+    )
+
+    expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
+    success_list = []
+    fail_list    = []
+
+    for user_id in valid_ids:
+        try:
+            user_data = {"id": user_id, "expiry_time": expiry_time, "has_free_trial": True}
+            await db.update_user(user_data)
+
+            notify_msg = (
+                "👑 <b>ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>\n\n"
+                f"⏳ Duration: <b>{duration}</b>\n"
+                f"📅 Expires: <code>{expiry_time.strftime('%d %b %Y %H:%M')}</code>\n\n"
+                "🎬 Direct files aur no ads enjoy karo!\n"
+                "/myplan se check karo."
+            )
+            try:
+                await client.send_message(user_id, notify_msg, parse_mode=enums.ParseMode.HTML)
+            except Exception:
+                pass  # User ne bot block kiya ho sakta hai
+
+            success_list.append(user_id)
+        except Exception as e:
+            fail_list.append(f"{user_id} ({e})")
+        await asyncio.sleep(0.3)
+
+    # Summary
+    result = (
+        f"<b>✅ Bulk Premium Complete!</b>\n\n"
+        f"⏳ Duration: <b>{duration}</b>\n"
+        f"📅 Expiry: <code>{expiry_time.strftime('%d %b %Y')}</code>\n\n"
+        f"✅ Success: <b>{len(success_list)}</b> users\n"
+    )
+    if success_list:
+        ids_str = ", ".join(f"<code>{i}</code>" for i in success_list)
+        result += f"Users: {ids_str}\n"
+    if fail_list:
+        result += f"\n❌ Failed: <b>{len(fail_list)}</b>\n"
+        result += "\n".join(fail_list)
+    if invalid:
+        result += f"\n⚠️ Invalid IDs ignored: {', '.join(invalid)}"
+
+    await sts.edit_text(result, parse_mode=enums.ParseMode.HTML)
+
+    # Log to LOG_CHANNEL
+    try:
+        await client.send_message(
+            LOG_CHANNEL,
+            f"👑 <b>#BulkPremium</b>\n"
+            f"👤 Admin: {message.from_user.mention}\n"
+            f"📊 {len(success_list)} users | Duration: {duration}",
+            parse_mode=enums.ParseMode.HTML
+        )
+    except Exception:
+        pass
+
 @Client.on_message(filters.command("remove_premium"))
 async def remove_premium_cmd_handler(client, message):
     if PREMIUM_AND_REFERAL_MODE == False:
@@ -1472,17 +1585,21 @@ async def buy_premium_plan_redirect(client, callback_query):
     from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
     plan = PLANS[0]
     try:
-        await callback_query.message.reply_photo(
-            photo=PAYMENT_QR,
-            caption=_plan_caption(plan),
-            reply_markup=_plan_buttons(0),
-            parse_mode=enums.ParseMode.HTML
-        )
+        if PAYMENT_QR and PAYMENT_QR.startswith("http"):
+            await callback_query.message.reply_photo(
+                photo=PAYMENT_QR,
+                caption=_plan_caption(plan),
+                reply_markup=_plan_buttons(0),
+                parse_mode=enums.ParseMode.HTML
+            )
+        else:
+            raise ValueError("No QR")
     except Exception:
         await callback_query.message.reply_text(
             _plan_caption(plan),
             reply_markup=_plan_buttons(0),
-            parse_mode=enums.ParseMode.HTML
+            parse_mode=enums.ParseMode.HTML,
+            disable_web_page_preview=True
         )
 
 # Also handle old buy_premium callback
@@ -1493,17 +1610,21 @@ async def buy_premium_redirect(client, callback_query):
     from plugins.premium_plan import _plan_caption, _plan_buttons, PLANS
     plan = PLANS[0]
     try:
-        await callback_query.message.reply_photo(
-            photo=PAYMENT_QR,
-            caption=_plan_caption(plan),
-            reply_markup=_plan_buttons(0),
-            parse_mode=enums.ParseMode.HTML
-        )
+        if PAYMENT_QR and PAYMENT_QR.startswith("http"):
+            await callback_query.message.reply_photo(
+                photo=PAYMENT_QR,
+                caption=_plan_caption(plan),
+                reply_markup=_plan_buttons(0),
+                parse_mode=enums.ParseMode.HTML
+            )
+        else:
+            raise ValueError("No QR")
     except Exception:
         await callback_query.message.reply_text(
             _plan_caption(plan),
             reply_markup=_plan_buttons(0),
-            parse_mode=enums.ParseMode.HTML
+            parse_mode=enums.ParseMode.HTML,
+            disable_web_page_preview=True
         )
 
 # Ye naya code hai Refer Link dene ke liye
