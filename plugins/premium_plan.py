@@ -98,7 +98,7 @@ def _plan_buttons(idx):
     ])
 
 
-@Client.on_message(filters.command("plan") & filters.incoming, group=0)
+@Client.on_message(filters.command("plan") & filters.incoming, group=-1)
 async def plan_cmd(client, message):
     if not PREMIUM_AND_REFERAL_MODE:
         return await message.reply_text(
@@ -109,15 +109,22 @@ async def plan_cmd(client, message):
     caption = _plan_caption(plan)
     markup  = _plan_buttons(0)
     try:
-        await message.reply_photo(
-            photo=PAYMENT_QR,
-            caption=caption,
-            reply_markup=markup,
-            parse_mode=enums.ParseMode.HTML
-        )
+        if PAYMENT_QR and PAYMENT_QR.startswith("http"):
+            await message.reply_photo(
+                photo=PAYMENT_QR,
+                caption=caption,
+                reply_markup=markup,
+                parse_mode=enums.ParseMode.HTML
+            )
+        else:
+            raise ValueError("No valid QR URL")
     except Exception:
+        # Fallback: plain text with plan info
         await message.reply_text(
-            caption, reply_markup=markup, parse_mode=enums.ParseMode.HTML
+            caption,
+            reply_markup=markup,
+            parse_mode=enums.ParseMode.HTML,
+            disable_web_page_preview=True
         )
 
 
