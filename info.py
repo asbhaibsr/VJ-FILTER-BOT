@@ -241,7 +241,7 @@ YEARS = [
     "1900","1991","1992","1993","1994","1995","1996","1997","1998","1999",
     "2000","2001","2002","2003","2004","2005","2006","2007","2008","2009",
     "2010","2011","2012","2013","2014","2015","2016","2017","2018","2019",
-    "2020","2021","2022","2023","2024","2025",
+    "2020","2021","2022","2023","2024","2025","2026",
 ]
 
 
@@ -256,7 +256,7 @@ PING_INTERVAL    = int(environ.get("PING_INTERVAL", "1200"))   # 20 minutes
 if 'DYNO' in environ:
     ON_HEROKU = True
 else:
-    ON_HEROKU = True
+    ON_HEROKU = False
 
 URL = environ.get("URL", "https://depressed-cornelle-asbhaibsr-179ba27d.koyeb.app/")
 
@@ -302,3 +302,21 @@ else:
 # Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+# ══════════════════════════════════════════════════════════════
+#   ANTI-SPAM & SEARCH LIMIT
+# ══════════════════════════════════════════════════════════════
+# Free user ke liye daily PM search limit (0 = unlimited)
+PM_SEARCH_DAILY_LIMIT = int(environ.get('PM_SEARCH_DAILY_LIMIT', '15'))
+
+# Spam threshold: N messages in T seconds → block for B seconds
+SPAM_MSG_LIMIT   = int(environ.get('SPAM_MSG_LIMIT',   '5'))   # N messages
+SPAM_TIME_WINDOW = int(environ.get('SPAM_TIME_WINDOW', '5'))   # T seconds
+SPAM_BLOCK_TIME  = int(environ.get('SPAM_BLOCK_TIME', '60'))   # B seconds block
+
+# ══════════════════════════════════════════════════════════════
+#   MAINTENANCE MODE
+# ══════════════════════════════════════════════════════════════
+# Bot startup pe off rehta hai, /maintenance on/off se toggle hota hai
+# env var set karna ho to: MAINTENANCE_MODE=True
+MAINTENANCE_MODE = _bool(environ.get('MAINTENANCE_MODE'), default=False)
