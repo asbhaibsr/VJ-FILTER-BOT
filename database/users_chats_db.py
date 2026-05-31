@@ -66,6 +66,9 @@ class Database:
         self.grp = self.db.groups
         self.users = self.db.uersz
         self.bot = self.db.clone_bots
+        self.redeem = self.db.redeem_codes          # Separate redeem codes collection
+        self.analytics = self.db.search_analytics   # Search analytics collection
+        self.notif = self.db.expiry_notifications   # Expiry reminder tracking
 
 
     def new_user(self, id, name):
@@ -257,7 +260,7 @@ class Database:
                 await self.users.update_one({"id": user_id}, {"$set": {"expiry_time": None}})
         return False
     
-    async def check_remaining_uasge(self, userid):
+    async def check_remaining_usage(self, userid):
         user_id = userid
         user_data = await self.get_user(user_id)        
         expiry_time = user_data.get("expiry_time")
@@ -299,17 +302,17 @@ class Database:
             "created_at": datetime.datetime.now(),
             "expires_at": datetime.datetime.now() + datetime.timedelta(hours=expiry_hours)
         }
-        await self.col.update_one({"_id": f"redeem_{code}"}, {"$set": code_data}, upsert=True)
+        await self.redeem.update_one({"code": code}, {"$set": code_data}, upsert=True)
 
     async def get_redeem_code(self, code: str):
         """Get redeem code info"""
-        return await self.col.find_one({"_id": f"redeem_{code}"})
+        return await self.redeem.find_one({"code": code})
 
     async def mark_redeem_used(self, code: str, user_id: int):
         """Mark code as used by user"""
         import datetime
-        await self.col.update_one(
-            {"_id": f"redeem_{code}"},
+        await self.redeem.update_one(
+            {"code": code},
             {"$set": {"used": True, "used_by": user_id, "used_at": datetime.datetime.now()}}
         )
 
@@ -317,7 +320,7 @@ class Database:
         """Count how many redeem codes this user has used today"""
         import datetime
         today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        count = await self.col.count_documents({
+        count = await self.redeem.count_documents({
             "used_by": user_id,
             "used": True,
             "used_at": {"$gte": today_start}
@@ -366,5 +369,90 @@ class Database:
         user = await self.col.find_one({'id': int(id)})
         return user.get('save', False) 
     
+
+    # ── SEARCH ANALYTICS ───────────────────────────────────────────
+    async def track_search(self, query: str):
+        """Search query ko analytics mein track karo"""
+        q = query.strip().lower()[:100]
+        if not q:
+            return
+        await self.analytics.update_one(
+            {"query": q},
+            {"$inc": {"count": 1}, "$set": {"last_searched": datetime.datetime.now()}},
+            upsert=True
+        )
+
+    async def get_top_searches(self, limit: int = 10):
+        """Top searched queries return karo"""
+        cursor = self.analytics.find({}).sort("count", -1).limit(limit)
+        results = []
+        async for doc in cursor:
+            results.append(doc)
+        return results
+
+    async def clear_analytics(self):
+        """Saari analytics delete karo"""
+        await self.analytics.delete_many({})
+
+    # ── PREMIUM EXPIRY REMINDER ─────────────────────────────────────
+    async def get_expiring_soon(self, hours: int = 24):
+        """Users jo next N hours mein expire honge"""
+        now = datetime.datetime.now()
+        soon = now + datetime.timedelta(hours=hours)
+        users = []
+        async for u in self.users.find({
+            "expiry_time": {"$gt": now, "$lte": soon}
+        }):
+            users.append(u)
+        return users
+
+    async def mark_expiry_notified(self, user_id: int):
+        """Mark that expiry reminder was sent"""
+        await self.users.update_one(
+            {"id": user_id},
+            {"$set": {"expiry_notified": True}}
+        )
+
+    async def clear_expiry_notified(self, user_id: int):
+        """Clear the notification flag (reset after expiry)"""
+        await self.users.update_one(
+            {"id": user_id},
+            {"$set": {"expiry_notified": False}}
+        )
+
+    # ── MAINTENANCE MODE ────────────────────────────────────────────
+    async def get_maintenance_msg(self) -> str:
+        """Get custom maintenance message"""
+        doc = await self.col.find_one({"_id": "maintenance_msg"})
+        return doc.get("msg", "🔧 Bot abhi maintenance pe hai. Thoda wait karo!") if doc else "🔧 Bot abhi maintenance pe hai. Thoda wait karo!"
+
+    async def set_maintenance_msg(self, msg: str):
+        """Set custom maintenance message"""
+        await self.col.update_one(
+            {"_id": "maintenance_msg"},
+            {"$set": {"msg": msg}},
+            upsert=True
+        )
+
+    # ── CLEANUP REDEEM CODES ────────────────────────────────────────
+    async def cleanup_expired_codes(self) -> int:
+        """Expired aur used redeem codes delete karo"""
+        import datetime as dt
+        result = await self.redeem.delete_many({
+            "$or": [
+                {"expires_at": {"$lt": dt.datetime.now()}},
+                {"used": True}
+            ]
+        })
+        return result.deleted_count
+
+    async def get_all_codes_count(self) -> dict:
+        """Redeem codes ka summary"""
+        total   = await self.redeem.count_documents({})
+        used    = await self.redeem.count_documents({"used": True})
+        active  = await self.redeem.count_documents({"used": False, "expires_at": {"$gt": datetime.datetime.now()}})
+        expired = await self.redeem.count_documents({"expires_at": {"$lt": datetime.datetime.now()}, "used": False})
+        return {"total": total, "used": used, "active": active, "expired": expired}
+
 
 db = Database(USER_DB_URI, DATABASE_NAME)
