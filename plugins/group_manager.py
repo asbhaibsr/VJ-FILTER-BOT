@@ -35,16 +35,17 @@ def _build_page(groups: list, page: int, total_active: int, removed: int):
     )
 
     buttons = []
-    for g in chunk:
-        gid   = g["id"]
-        title = g["title"][:28] + "…" if len(g["title"]) > 28 else g["title"]
-        # Invite link button — user clicks to open group
-        try:
-            invite_url = f"https://t.me/c/{str(gid).replace('-100', '')}"
-        except Exception:
-            invite_url = f"https://t.me/c/{gid}"
+    for i, g in enumerate(chunk, start=start+1):
+        gid     = g["id"]
+        title   = g["title"]
+        title   = title[:26] + "…" if len(title) > 26 else title
+        members = g.get("members", 0)
+        link    = g.get("link", f"https://t.me/c/{str(gid).replace('-100','').lstrip('-')}")
+        label   = f"🏘 {i}. {title}"
+        if members:
+            label += f" ({members})"
         buttons.append([
-            InlineKeyboardButton(f"🏘 {title}", url=invite_url)
+            InlineKeyboardButton(label, url=link)
         ])
 
     # Pagination row
@@ -66,6 +67,7 @@ def _build_page(groups: list, page: int, total_active: int, removed: int):
 async def _fetch_groups(bot) -> tuple:
     """
     Fetch all groups from DB, verify each one (bot still member?),
+    generate real invite link via export_chat_invite_link,
     remove dead ones, return (active_list, removed_count)
     """
     active_list  = []
@@ -89,11 +91,42 @@ async def _fetch_groups(bot) -> tuple:
             if chat_obj.title and chat_obj.title != title:
                 await db.grp.update_one({"id": chat_id}, {"$set": {"title": chat_obj.title}})
                 title = chat_obj.title
-            active_list.append({"id": chat_id, "title": title})
+
+            # ── Real invite link banao ─────────────────────
+            invite_link = None
+
+            # 1st try: existing invite_link from chat object
+            if hasattr(chat_obj, "invite_link") and chat_obj.invite_link:
+                invite_link = chat_obj.invite_link
+
+            # 2nd try: export new invite link (bot admin hona chahiye)
+            if not invite_link:
+                try:
+                    invite_link = await bot.export_chat_invite_link(int(chat_id))
+                except Exception:
+                    pass
+
+            # 3rd fallback: t.me/c/ URL (public groups ke liye)
+            if not invite_link:
+                gid_str = str(chat_id)
+                if gid_str.startswith("-100"):
+                    clean_id = gid_str[4:]
+                elif gid_str.startswith("-"):
+                    clean_id = gid_str[1:]
+                else:
+                    clean_id = gid_str
+                invite_link = f"https://t.me/c/{clean_id}"
+
+            active_list.append({
+                "id":     chat_id,
+                "title":  title,
+                "link":   invite_link,
+                "members": getattr(chat_obj, "members_count", 0) or 0
+            })
         except Exception:
             inactive_ids.append(chat_id)
 
-    # Remove dead groups from DB
+    # Remove dead/left groups from DB
     for cid in inactive_ids:
         try:
             await db.grp.delete_one({"id": cid})
