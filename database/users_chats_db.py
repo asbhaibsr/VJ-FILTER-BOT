@@ -268,6 +268,10 @@ class Database:
         remaining_time = expiry_time - datetime.datetime.now()
         return remaining_time
 
+    # Backward compat alias — old typo wala naam
+    async def check_remaining_uasge(self, userid):
+        return await self.check_remaining_usage(userid)
+
     async def get_free_trial_status(self, user_id):
         user_data = await self.get_user(user_id)
         if user_data:
