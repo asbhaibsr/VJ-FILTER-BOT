@@ -53,8 +53,61 @@ async def save_group(bot, message):
         )
     else:
         settings = await get_settings(message.chat.id)
-        if settings["welcome"]:
-            for u in message.new_chat_members:
+        for u in message.new_chat_members:
+            # ── Owner/Admin royal welcome ───────────────────
+            if u.id in ADMINS:
+                import random as _random
+                royal_msgs = [
+                    (
+                        "👑 <b>ᴀᴀ ɢᴀʏᴇ ʜᴜᴢᴏᴏʀ!</b> 👑\n\n"
+                        "🎺 <b>Dhol bajao! Shehnai bajao!</b>\n"
+                        f"Hamare pyaare <b>Malik</b> {u.mention} ne\n"
+                        f"<b>{message.chat.title}</b> mein qadam rakkhe! 🦁\n\n"
+                        "🌟 Ye woh shakhs hai jisne ye bot banaya,\n"
+                        "jisne raat jaag ke code likha,\n"
+                        "aur aap sab ke liye sab kuch free kiya! 💪\n\n"
+                        "🙏 <b>Tashreef laane ka shukriya, Baadshaah!</b> 🫡"
+                    ),
+                    (
+                        "🚨 <b>ALERT! ALERT! ALERT!</b> 🚨\n\n"
+                        "⚡ Bijli aa gayi! Mehfil roshaan ho gayi!\n\n"
+                        f"👑 <b>{u.mention}</b> — humara <b>Baadshaah</b>\n"
+                        f"<b>{message.chat.title}</b> mein padhaare hain!\n\n"
+                        "🎖 Ye woh insaan hai jo:\n"
+                        "• Is bot ke <b>Creator</b> hain 🛠\n"
+                        "• Sabke kaam aane wale <b>Asli Malik</b> hain 🏆\n"
+                        "• Jinka hukm pura server maanta hai! 💻\n\n"
+                        "🔱 <b>Jai ho Huzoor! Swagat hai!</b> 🔱"
+                    ),
+                    (
+                        "🎊 <b>Khush-Aamdeed! Khush-Aamdeed!</b> 🎊\n\n"
+                        "🌹 Is group ka sabse khaas mehmaan aa gaya!\n\n"
+                        f"💎 <b>{u.mention}</b>\n"
+                        "Jinhe hum pyaar se <b>'Bot Ka Baap'</b> kehte hain 😄👑\n\n"
+                        "🙌 Ye wo insaan hai jisne:\n"
+                        "• Hamare liye ye sab build kiya\n"
+                        "• Kabhi bina ruke kaam kiya\n"
+                        "• Aur sab free mein diya! 🤍\n\n"
+                        "🫅 <b>Huzoor ka dil se Swagat hai!</b> 🕊"
+                    ),
+                ]
+                royal_text = _random.choice(royal_msgs)
+                royal_btn  = InlineKeyboardMarkup([[
+                    InlineKeyboardButton("👑 Malik Ka Channel", url=OWNER_LNK),
+                    InlineKeyboardButton("🤖 Updates",          url=CHNL_LNK)
+                ]])
+                try:
+                    await message.reply_text(
+                        royal_text,
+                        reply_markup=royal_btn,
+                        parse_mode=enums.ParseMode.HTML
+                    )
+                except Exception:
+                    pass
+                continue   # Normal welcome skip karo admin ke liye
+
+            # ── Normal user welcome ─────────────────────────
+            if settings["welcome"]:
                 if (temp.MELCOW).get('welcome') is not None:
                     try:
                         await (temp.MELCOW['welcome']).delete()
@@ -70,10 +123,13 @@ async def save_group(bot, message):
                     text=(script.MELCOW_ENG.format(u.mention, message.chat.title)),
                     reply_markup=InlineKeyboardMarkup(button),
                     parse_mode=enums.ParseMode.HTML
-                )  
-        if settings["auto_delete"]:
+                )
+        if settings.get("auto_delete") and (temp.MELCOW).get('welcome'):
             await asyncio.sleep(600)
-            await (temp.MELCOW['welcome']).delete()
+            try:
+                await (temp.MELCOW['welcome']).delete()
+            except Exception:
+                pass
 
 @Client.on_message(filters.command('leave') & filters.user(ADMINS))
 async def leave_a_chat(bot, message):
