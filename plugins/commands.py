@@ -11,7 +11,7 @@ from database.ia_filterdb import col, sec_col, get_file_details, unpack_new_file
 from database.users_chats_db import db, delete_all_referal_users, get_referal_users_count, get_referal_all_users, referal_add_user
 from database.join_reqs import JoinReqs
 from info import CLONE_MODE, OWNER_LNK, REACTIONS, CHANNELS, REQUEST_TO_JOIN_MODE, TRY_AGAIN_BTN, ADMINS, SHORTLINK_MODE, PREMIUM_AND_REFERAL_MODE, STREAM_MODE, AUTH_CHANNEL, REFERAL_PREMEIUM_TIME, REFERAL_COUNT, PAYMENT_TEXT, PAYMENT_QR, LOG_CHANNEL, PICS, BATCH_FILE_CAPTION, CUSTOM_FILE_CAPTION, PROTECT_CONTENT, CHNL_LNK, GRP_LNK, REQST_CHANNEL, SUPPORT_CHAT, MAX_B_TN, VERIFY, SHORTLINK_API, SHORTLINK_URL, TUTORIAL, VERIFY_TUTORIAL, IS_TUTORIAL, URL
-from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
+from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_verify_time_remaining, needs_second_verify, get_token, get_shortlink, get_tutorial, get_seconds
 from database.connections_mdb import active_connection
 from urllib.parse import quote_plus
 from TechVJ.util.file_properties import get_name, get_hash, get_media_file_size
@@ -399,13 +399,36 @@ async def start(client, message):
             return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
         is_valid = await check_token(client, userid, token)
         if is_valid == True:
-            text = "<b>✅ हे {}!\n\nआपकी वेरिफिकेशन सफल रही है 🎉\nअब आप अगले 24 घंटे तक बॉट को बिना किसी लिमिट के फ्री में इस्तेमाल कर सकते हैं।</b>"
-            if PREMIUM_AND_REFERAL_MODE == True:
-                text += "<b>\n\n💎 अगर आप बॉट को बिना रुकावट और बिना वेरिफिकेशन के इस्तेमाल करना चाहते हैं,\nतो प्रीमियम लेना सबसे अच्छा तरीका है।\n\n📌 प्रीमियम में आपको सीधी फाइल, तेज स्पीड और पूरा एक्सेस मिलेगा।\n\n👉 प्रीमियम प्लान देखने के लिए /plan टाइप करें।</b>"
-            await message.reply_text(text=text.format(message.from_user.mention), protect_content=True)
             await verify_user(client, userid, token)
+            remaining = await get_verify_time_remaining(int(userid))
+            hrs = remaining // 3600
+            mins = (remaining % 3600) // 60
+            time_str = f"{hrs}h {mins}m" if hrs > 0 else f"{mins}m"
+            text = (
+                "<b>✅ Verify Ho Gaya! {}</b>\n\n"
+                f"🎉 Agle <b>{time_str}</b> tak bot bilkul free hai!\n"
+                "Koi limit nahi, koi rukaawat nahi.\n\n"
+                "👇 <b>Neeche button dabao — file aa jayegi!</b>"
+            )
+            if PREMIUM_AND_REFERAL_MODE:
+                text += "\n\n💎 <i>Bina verify ke hamesha ke liye: /plan</i>"
+            # File wapas lane ke liye button
+            get_file_btn = [[
+                InlineKeyboardButton("📥 ɢᴇᴛ ғɪʟᴇ", url=f"https://telegram.me/{temp.U_NAME}?start={data.split('verify-')[0].strip() if 'verify-' in data else ''}" if False else f"https://telegram.me/{temp.U_NAME}"),
+            ]]
+            # Better: redirect to bot start so user re-searches
+            verify_btns = [[
+                InlineKeyboardButton("🎬 ɢᴇᴛ ғɪʟᴇꜱ ɴᴏᴡ", url=f"https://telegram.me/{temp.U_NAME}?start=verified"),
+                InlineKeyboardButton("💎 Premium", callback_data="buy_premium"),
+            ]]
+            await message.reply_text(
+                text=text.format(message.from_user.mention),
+                reply_markup=InlineKeyboardMarkup(verify_btns),
+                protect_content=True,
+                parse_mode=enums.ParseMode.HTML
+            )
         else:
-            return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
+            return await message.reply_text(text="<b>❌ ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True, parse_mode=enums.ParseMode.HTML)
 
     elif data.split("-", 1)[0] == "verify":
         userid = data.split("-", 2)[1]
@@ -414,13 +437,31 @@ async def start(client, message):
             return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
         is_valid = await check_token(client, userid, token)
         if is_valid == True:
-            text = "<b>✅ हे {}!\n\nआपकी वेरिफिकेशन सफल रही है 🎉\nअब आप अगले 24 घंटे तक बॉट को बिना किसी लिमिट के फ्री में इस्तेमाल कर सकते हैं।</b>"
-            if PREMIUM_AND_REFERAL_MODE == True:
-                text += "<b>\n\n💎 अगर आप बॉट को बिना रुकावट और बिना वेरिफिकेशन के इस्तेमाल करना चाहते हैं,\nतो प्रीमियम लेना सबसे अच्छा तरीका है।\n\n📌 प्रीमियम में आपको सीधी फाइल, तेज स्पीड और पूरा एक्सेस मिलेगा।\n\n👉 प्रीमियम प्लान देखने के लिए /plan टाइप करें।</b>"           
-            await message.reply_text(text=text.format(message.from_user.mention), protect_content=True)
             await verify_user(client, userid, token)
+            remaining = await get_verify_time_remaining(int(userid))
+            hrs = remaining // 3600
+            mins = (remaining % 3600) // 60
+            time_str = f"{hrs}h {mins}m" if hrs > 0 else f"{mins}m"
+            text = (
+                "<b>✅ Verify Ho Gaya! {}</b>\n\n"
+                f"🎉 Agle <b>{time_str}</b> tak bot bilkul free hai!\n"
+                "Koi limit nahi, koi rukaawat nahi.\n\n"
+                "👇 <b>Neeche button dabao — file aa jayegi!</b>"
+            )
+            if PREMIUM_AND_REFERAL_MODE:
+                text += "\n\n💎 <i>Bina verify ke hamesha ke liye: /plan</i>"
+            verify_btns = [[
+                InlineKeyboardButton("🎬 ɢᴇᴛ ғɪʟᴇꜱ ɴᴏᴡ", url=f"https://telegram.me/{temp.U_NAME}?start=verified"),
+                InlineKeyboardButton("💎 Premium", callback_data="buy_premium"),
+            ]]
+            await message.reply_text(
+                text=text.format(message.from_user.mention),
+                reply_markup=InlineKeyboardMarkup(verify_btns),
+                protect_content=True,
+                parse_mode=enums.ParseMode.HTML
+            )
         else:
-            return await message.reply_text(text="<b>ɪɴᴠᴀʟɪᴋ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True)
+            return await message.reply_text(text="<b>❌ ɪɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ ᴇxᴘɪʀᴇᴅ ʟɪɴᴋ</b>", protect_content=True, parse_mode=enums.ParseMode.HTML)
             
     if data.startswith("sendfiles"):
         chat_id = int("-" + file_id.split("-")[1])
@@ -640,6 +681,72 @@ async def start(client, message):
     await msg.delete()
     await k.edit_text("<b>✅ ʏᴏᴜʀ ᴍᴇssᴀɢᴇ ɪs sᴜᴄᴄᴇssғᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ ɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴀɢᴀɪɴ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ</b>",reply_markup=InlineKeyboardMarkup(btn))
     return   
+
+
+@Client.on_callback_query(filters.regex("^help$"))
+async def help_callback(client, query):
+    """Feature guide / How to use"""
+    user = query.from_user
+    text = (
+        f"<b>🎬 Bot Kaise Use Karein — {user.first_name}!</b>\n\n"
+        
+        "<b>📥 Movie/Series Download:</b>\n"
+        "1️⃣ Group mein movie ka naam likho\n"
+        "2️⃣ Results mein apni movie dhundho\n"
+        "3️⃣ Click karo → File aa jayegi!\n\n"
+        
+        "<b>🔐 Verify System (Free Users):</b>\n"
+        "• Pehli baar → <b>Verify</b> button dabao\n"
+        "• Ek link open hoga — wait karo 10-15 sec\n"
+        "• Wapas aao → <b>12 ghante</b> tak sab free!\n"
+        "• 12h baad phir ek verify → 12h aur free\n\n"
+        
+        "<b>💎 Premium Kya Hai?</b>\n"
+        "• Koi verify nahi, seedha file milegi\n"
+        "• Unlimited PM search\n"
+        "• Priority access\n"
+        "• /plan se lelo\n\n"
+        
+        "<b>🆓 Free Trial:</b>\n"
+        "• Pehli baar 5 min ka free trial milta hai\n"
+        "• /start → Free Trial button dabao\n\n"
+        
+        "<b>❓ Koi Problem?</b>\n"
+        f"• Support: @{SUPPORT_CHAT}\n"
+        "• Video guide: t.me/asbhai_bsr/671"
+    )
+    btn = [[
+        InlineKeyboardButton("📥 Download Video Guide", url="https://t.me/asbhai_bsr/671"),
+        InlineKeyboardButton("💎 Premium Plans",        callback_data="buy_premium"),
+    ],[
+        InlineKeyboardButton("🆓 Free Trial",           callback_data="get_trail"),
+        InlineKeyboardButton("❌ Close",                 callback_data="close_data"),
+    ]]
+    try:
+        await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
+    except Exception:
+        await query.answer()
+
+
+@Client.on_callback_query(filters.regex("^shortlink_info$"))
+async def shortlink_info_cb(client, query):
+    """Shortlink earnings info"""
+    text = (
+        "<b>💸 Shortlink Se Paise Kaise Kamao?</b>\n\n"
+        "Ye bot shortlink system use karta hai.\n"
+        "Jab user verify karta hai ek link open karke,\n"
+        "to bot owner (tum) ko <b>per click paise milte hain!</b>\n\n"
+        "<b>Setup karo:</b>\n"
+        "1. shortxlinks.com pe account banao\n"
+        "2. API key lo\n"
+        "3. Bot ke ENV mein dalo:\n"
+        "   <code>VERIFY_SHORTLINK_URL = shortxlinks.com</code>\n"
+        "   <code>VERIFY_SHORTLINK_API = apni_api_key</code>\n\n"
+        "<b>Earning:</b> ₹2-8 per 1000 clicks\n"
+        "1000 users/day = ₹2-8/day = <b>₹60-240/month</b> 💰"
+    )
+    await query.answer()
+    await query.message.reply_text(text, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
 
 @Client.on_message(filters.command('channel') & filters.user(ADMINS))
 async def channel_info(bot, message):
