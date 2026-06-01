@@ -80,10 +80,21 @@ async def _fetch_groups(bot) -> tuple:
         async for c in db.grp.find({}):
             all_chats.append(c)
 
+    seen_ids = set()   # Duplicate ID tracker
     for chat in all_chats:
         chat_id = chat.get("id")
         if not chat_id:
             continue
+        # Skip duplicate entries (same group added multiple times)
+        norm_id = int(chat_id)
+        if norm_id in seen_ids:
+            # Remove duplicate from DB
+            try:
+                await db.grp.delete_one({"_id": chat.get("_id")})
+            except Exception:
+                pass
+            continue
+        seen_ids.add(norm_id)
         title = chat.get("title", "Unknown Group")
         try:
             chat_obj = await bot.get_chat(int(chat_id))
@@ -234,85 +245,4 @@ async def mg_noop_cb(bot, query: CallbackQuery):
     await query.answer("Ye page number hai 😊")
 
 
-# ════════════════════════════════════════════════════════════════
-#   OWNER ROYAL WELCOME  — Jab owner kisi group mein aaye
-# ════════════════════════════════════════════════════════════════
-
-ROYAL_MESSAGES = [
-    (
-        "👑 <b>ᴀᴀ ɢᴀʏᴇ ʜᴜᴢᴏᴏʀ!</b> 👑\n\n"
-        "🎺 <b>Dhol bajao! Shehnai bajao!</b>\n"
-        "Hamare pyaare <b>Malik</b> {mention} ne is group mein\n"
-        "apne qadam rakkhe hain! 🦁\n\n"
-        "🌟 Ye woh shakhs hai jisne ye bot banaya,\n"
-        "jisne raat ko jaag ke code likha,\n"
-        "aur aap sab ke liye ye sab kuch kiya! 💪\n\n"
-        "🙏 <b>Tashreef laane ka shukriya, Baadshaah!</b>\n"
-        "Aapki khidmat mein hamesha tayyar hoon. 🫡"
-    ),
-    (
-        "🚨 <b>ALERT! ALERT! ALERT!</b> 🚨\n\n"
-        "⚡ Bijli aa gayi! Mehfil roshaan ho gayi!\n\n"
-        "👑 <b>{mention}</b> — humara <b>Baadshaah</b>\n"
-        "is group mein padhaare hain!\n\n"
-        "🎖 Ye woh insaan hai jo:\n"
-        "• Is bot ke <b>Creator</b> hain 🛠\n"
-        "• Sabke kaam aane wale <b>Asli Malik</b> hain 🏆\n"
-        "• Jinka hukm sirf bot hi nahi,\n"
-        "  ye pura server maanta hai! 💻\n\n"
-        "🔱 <b>Jai ho Huzoor! Swagat hai!</b> 🔱"
-    ),
-    (
-        "🎊 <b>Khush-Aamdeed! Khush-Aamdeed!</b> 🎊\n\n"
-        "🌹 Is group ka sabse khaas mehmaan aa gaya!\n\n"
-        "💎 <b>{mention}</b> — Jinhe hum pyaar se\n"
-        "<b>\"Bot Ka Baap\"</b> kehte hain 😄👑\n\n"
-        "🙌 Ye wo insaan hai jisne:\n"
-        "• Hamare liye ye sab build kiya\n"
-        "• Kabhi bina ruke kaam kiya\n"
-        "• Aur sab free mein diya! 🤍\n\n"
-        "🫅 <b>Huzoor ka dil se Swagat hai!</b>\n"
-        "Aapka ye group hamesha aapka intezaar karta hai! 🕊"
-    ),
-]
-
-import random
-
-@Client.on_message(filters.new_chat_members & filters.group, group=2)
-async def owner_royal_welcome(bot, message: Message):
-    """Jab owner kisi group mein aaye, royal welcome karo"""
-    try:
-        joining_ids = [u.id for u in message.new_chat_members]
-
-        # Check if owner/admin joined
-        owner_user = None
-        for u in message.new_chat_members:
-            if u.id in ADMINS:
-                owner_user = u
-                break
-
-        if not owner_user:
-            return  # Normal user, skip karo
-
-        # Bot khud join hua to skip (wo alag handler handle karta hai)
-        if owner_user.id == temp.ME:
-            return
-
-        mention = owner_user.mention
-
-        # Random royal message choose karo
-        royal_text = random.choice(ROYAL_MESSAGES).format(mention=mention)
-
-        buttons = InlineKeyboardMarkup([[
-            InlineKeyboardButton("👑 Malik Ka Channel", url=OWNER_LNK),
-            InlineKeyboardButton("🤖 Bot Updates",      url=CHNL_LNK)
-        ]])
-
-        await message.reply_text(
-            royal_text,
-            parse_mode=enums.ParseMode.HTML,
-            reply_markup=buttons
-        )
-
-    except Exception as e:
-        logger.error(f"Owner royal welcome error: {e}")
+# Owner royal welcome is handled in p_ttishow.py → save_group handler
