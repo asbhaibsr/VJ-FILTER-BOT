@@ -159,7 +159,7 @@ async def re_enable_chat(bot, message):
 
 @Client.on_message(filters.command('stats') & filters.incoming)
 async def get_ststs(bot, message):
-    rju = await message.reply('<b>⏳ Stats fetch ho rahi hain...</b>', parse_mode="html")
+    rju = await message.reply('<b>⏳ Stats fetch ho rahi hain...</b>', parse_mode=enums.ParseMode.HTML)
     try:
         total_users  = await db.total_users_count()
         totl_chats   = await db.total_chat_count()
@@ -199,7 +199,7 @@ async def get_ststs(bot, message):
         )
 
         if MULTIPLE_DATABASE == False:
-            await rju.edit(base_stats, parse_mode="html")
+            await rju.edit(base_stats, parse_mode=enums.ParseMode.HTML)
             return
 
         totalsec    = sec_col.count_documents({})
@@ -216,10 +216,10 @@ async def get_ststs(bot, message):
             f"DB2: Used <code>{round(used_dbSize2,2)} MB</code> | Free <code>{round(free_dbSize2,2)} MB</code>\n"
             f"DB3: Used <code>{round(used_dbSize3,2)} MB</code> | Free <code>{round(free_dbSize3,2)} MB</code>"
         )
-        await rju.edit(multi_stats, parse_mode="html")
+        await rju.edit(multi_stats, parse_mode=enums.ParseMode.HTML)
 
     except Exception as e:
-        await rju.edit(f"<b>Error:</b> <code>{e}</code>", parse_mode="html")
+        await rju.edit(f"<b>Error:</b> <code>{e}</code>", parse_mode=enums.ParseMode.HTML)
 
 @Client.on_message(filters.command('invite') & filters.user(ADMINS))
 async def gen_invite(bot, message):
@@ -246,7 +246,7 @@ async def ban_a_user(bot, message):
             "✅ Format: <code>/ban user_id reason</code>\n"
             "🔸 Example: <code>/ban 123456789 Spamming</code>\n\n"
             "💡 Reply mode bhi kaam karta hai!</b>",
-            parse_mode="html"
+            parse_mode=enums.ParseMode.HTML
         )
     if message.reply_to_message and message.reply_to_message.from_user:
         k = message.reply_to_message.from_user
@@ -266,16 +266,16 @@ async def ban_a_user(bot, message):
         try:
             k = await bot.get_users(chat_id)
         except PeerIdInvalid:
-            return await message.reply_text("<b>❌ Invalid user!</b>", parse_mode="html")
+            return await message.reply_text("<b>❌ Invalid user!</b>", parse_mode=enums.ParseMode.HTML)
         except Exception as e:
-            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode="html")
+            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode=enums.ParseMode.HTML)
     jar = await db.get_ban_status(k.id)
     if jar['is_banned']:
         return await message.reply_text(
             f"<b>⚠️ {k.mention} pehle se banned hai!\n\n"
             f"📋 Reason: {jar['ban_reason']}\n\n"
             f"Unban: <code>/unban {k.id}</code></b>",
-            parse_mode="html"
+            parse_mode=enums.ParseMode.HTML
         )
     await db.ban_user(k.id, reason)
     temp.BANNED_USERS.append(k.id)
@@ -285,13 +285,13 @@ async def ban_a_user(bot, message):
         f"🆔 ID: <code>{k.id}</code>\n"
         f"📋 Reason: {reason}\n\n"
         f"Unban: <code>/unban {k.id}</code></b></blockquote>",
-        parse_mode="html"
+        parse_mode=enums.ParseMode.HTML
     )
     try:
         await bot.send_message(
             k.id,
             f"<b>🚫 Aapko is bot se ban kar diya gaya hai.\n\n📋 Reason: {reason}</b>",
-            parse_mode="html"
+            parse_mode=enums.ParseMode.HTML
         )
     except Exception:
         pass
@@ -302,7 +302,7 @@ async def unban_a_user(bot, message):
         return await message.reply_text(
             "<b>❌ User ID daalo!\n\n"
             "✅ Format: <code>/unban user_id</code></b>",
-            parse_mode="html"
+            parse_mode=enums.ParseMode.HTML
         )
     if message.reply_to_message and message.reply_to_message.from_user:
         k = message.reply_to_message.from_user
@@ -315,12 +315,12 @@ async def unban_a_user(bot, message):
         try:
             k = await bot.get_users(chat_id)
         except Exception as e:
-            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode="html")
+            return await message.reply_text(f"<b>❌ Error: {e}</b>", parse_mode=enums.ParseMode.HTML)
     jar = await db.get_ban_status(k.id)
     if not jar['is_banned']:
         return await message.reply_text(
             f"<b>⚠️ {k.mention} banned nahi hai!</b>",
-            parse_mode="html"
+            parse_mode=enums.ParseMode.HTML
         )
     await db.remove_ban(k.id)
     if k.id in temp.BANNED_USERS:
@@ -329,10 +329,10 @@ async def unban_a_user(bot, message):
         f"<blockquote><b>✅ User Unbanned!\n\n"
         f"👤 User: {k.mention}\n"
         f"🆔 ID: <code>{k.id}</code></b></blockquote>",
-        parse_mode="html"
+        parse_mode=enums.ParseMode.HTML
     )
     try:
-        await bot.send_message(k.id, "<b>✅ Aapka ban hata diya gaya!</b>", parse_mode="html")
+        await bot.send_message(k.id, "<b>✅ Aapka ban hata diya gaya!</b>", parse_mode=enums.ParseMode.HTML)
     except Exception:
         pass
     
@@ -358,7 +358,7 @@ async def list_users(bot, message):
 async def list_chats(bot, message):
     status = await message.reply_text(
         "<b>⏳ Groups check ho raha hai, thoda wait karo...</b>",
-        parse_mode="html"
+        parse_mode=enums.ParseMode.HTML
     )
 
     active_list  = []
@@ -412,7 +412,7 @@ async def list_chats(bot, message):
         out += "<i>Koi active group nahi mila.</i>"
 
     try:
-        await status.edit(out, parse_mode="html")
+        await status.edit(out, parse_mode=enums.ParseMode.HTML)
     except Exception:
         clean = out.replace("<b>","").replace("</b>","").replace("<code>","").replace("</code>","").replace("<i>","").replace("</i>","")
         with open("/tmp/chats.txt", "w") as f:
