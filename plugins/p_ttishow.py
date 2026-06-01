@@ -2,7 +2,12 @@
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
-import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64
+import os, string, logging, random, asyncio, time, datetime, re, sys, json, base64, io
+try:
+    from PIL import Image, ImageDraw, ImageFont, ImageFilter
+    PIL_OK = True
+except ImportError:
+    PIL_OK = False
 from Script import script
 from pyrogram import Client, filters, enums
 from pyrogram.errors import ChatAdminRequired, FloodWait
@@ -14,6 +19,143 @@ from info import *
 from pyrogram.errors.exceptions.bad_request_400 import MessageTooLong, PeerIdInvalid
 from utils import get_settings, pub_is_subscribed, get_size, is_subscribed, save_group_settings, temp, verify_user, check_token, check_verification, get_token, get_shortlink, get_tutorial, get_seconds
 from database.connections_mdb import active_connection, mydb
+
+
+# ══════════════════════════════════════════════════════════════
+#   WELCOME CARD GENERATOR (PIL)
+# ══════════════════════════════════════════════════════════════
+_FONT_PATH = "/usr/share/fonts/truetype/liberation/"
+
+async def _make_welcome_card(bot, user_id, first_name, group_title, member_count=0, is_owner=False):
+    """PIL se dynamic welcome image banao"""
+    if not PIL_OK:
+        return None
+    try:
+        W, H = 1280, 640
+        AV_X, AV_Y, AV_SIZE = 90, (H-330)//2, 330
+
+        # Background gradient
+        if is_owner:
+            c1, c2 = (45, 25, 10), (80, 45, 10)       # Gold/dark
+            border_col = (255, 190, 30)
+            title_col  = (255, 215, 0)
+            name_col   = (255, 235, 100)
+            sub_col    = (245, 225, 170)
+            badge_fill = (160, 100, 10)
+            av_border  = (255, 190, 30)
+        else:
+            c1, c2 = (28, 18, 72), (55, 35, 110)       # Purple
+            border_col = (140, 110, 240)
+            title_col  = (255, 255, 255)
+            name_col   = (180, 150, 255)
+            sub_col    = (210, 200, 240)
+            badge_fill = (100, 80, 200)
+            av_border  = (150, 120, 255)
+
+        img = Image.new("RGB", (W, H))
+        draw = ImageDraw.Draw(img)
+        for y in range(H):
+            t = y / H
+            r = int(c1[0]*(1-t)+c2[0]*t)
+            g = int(c1[1]*(1-t)+c2[1]*t)
+            b = int(c1[2]*(1-t)+c2[2]*t)
+            draw.line([(0,y),(W,y)], fill=(r,g,b))
+
+        # Border
+        draw.rounded_rectangle([28,28,W-28,H-28], radius=40, outline=border_col, width=3)
+
+        # Fonts
+        try:
+            f_big   = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    85 if not is_owner else 78)
+            f_name  = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    56)
+            f_sub   = ImageFont.truetype(_FONT_PATH+"LiberationSans-Regular.ttf", 38)
+            f_badge = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    28)
+        except Exception:
+            f_big = f_name = f_sub = f_badge = ImageFont.load_default()
+
+        # Avatar
+        av_img = None
+        try:
+            photos = await bot.get_profile_photos(user_id, limit=1)
+            if photos.total_count > 0:
+                av_buf = io.BytesIO()
+                await bot.download_media(photos[0].file_id, file=av_buf)
+                av_buf.seek(0)
+                src = Image.open(av_buf).convert("RGBA").resize((AV_SIZE, AV_SIZE))
+                mask = Image.new("L", (AV_SIZE, AV_SIZE), 0)
+                ImageDraw.Draw(mask).ellipse([0,0,AV_SIZE-1,AV_SIZE-1], fill=255)
+                av_img = Image.new("RGBA", (AV_SIZE+10, AV_SIZE+10), (0,0,0,0))
+                # Border ring
+                ImageDraw.Draw(av_img).ellipse([0,0,AV_SIZE+9,AV_SIZE+9], fill=av_border+(255,))
+                av_inner = Image.new("RGBA", (AV_SIZE, AV_SIZE), (0,0,0,0))
+                av_inner.paste(src, (0,0), mask)
+                av_img.paste(av_inner, (5,5), mask)
+        except Exception:
+            pass
+
+        if av_img is None:
+            # Initials fallback
+            av_img = Image.new("RGBA", (AV_SIZE+10, AV_SIZE+10), (0,0,0,0))
+            ImageDraw.Draw(av_img).ellipse([0,0,AV_SIZE+9,AV_SIZE+9], fill=av_border+(255,))
+            ImageDraw.Draw(av_img).ellipse([5,5,AV_SIZE+4,AV_SIZE+4], fill=(70,50,160,255) if not is_owner else (140,90,10,255))
+            try:
+                f_init = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf", 130)
+            except Exception:
+                f_init = ImageFont.load_default()
+            initials = (first_name[0] if first_name else "?").upper()
+            bbox = f_init.getbbox(initials)
+            ix = (AV_SIZE+10-(bbox[2]-bbox[0]))//2
+            iy = (AV_SIZE+10-(bbox[3]-bbox[1]))//2 - 5
+            ImageDraw.Draw(av_img).text((ix, iy), initials, fill=(255,255,255,255), font=f_init)
+
+        img.paste(av_img, (AV_X, AV_Y), av_img)
+
+        # Text
+        tx = AV_X + AV_SIZE + 55
+        ty = 80
+
+        if is_owner:
+            draw.text((tx, ty), "👑 AA GAYE HUZOOR! 👑", fill=title_col, font=f_sub)
+            ty += 55
+            nm = first_name[:20]
+            draw.text((tx, ty), nm, fill=name_col, font=f_big)
+            ty += 100
+            draw.text((tx, ty), (group_title[:30] if len(group_title)<=30 else group_title[:29]+"…"), fill=sub_col, font=f_name)
+            ty += 68
+            draw.text((tx, ty), "Bot Ka Maalik aa gaya! 🔥", fill=(255,200,80), font=f_sub)
+            ty += 52
+        else:
+            draw.text((tx, ty), "WELCOME", fill=title_col, font=f_big)
+            ty += 100
+            nm = first_name[:22]
+            draw.text((tx, ty), nm, fill=name_col, font=f_name)
+            ty += 70
+            draw.text((tx, ty), "to "+( group_title[:28] if len(group_title)<=28 else group_title[:27]+"…"), fill=sub_col, font=f_sub)
+            ty += 52
+            draw.text((tx, ty), "Bot is now watching over this chat 👁", fill=(160,155,200), font=ImageFont.truetype(_FONT_PATH+"LiberationSans-Regular.ttf", 30) if PIL_OK else f_badge)
+            ty += 50
+
+        # Members badge
+        if member_count:
+            badge_txt = f"👥  {member_count:,} Members"
+            try:
+                bbox = f_badge.getbbox(badge_txt)
+                bw = bbox[2]-bbox[0]+40
+                bh = bbox[3]-bbox[1]+18
+            except Exception:
+                bw, bh = 250, 44
+            draw.rounded_rectangle([tx, ty, tx+bw, ty+bh], radius=16,
+                                    fill=badge_fill, outline=border_col, width=2)
+            draw.text((tx+15, ty+9), badge_txt, fill=(255,255,255), font=f_badge)
+
+        buf = io.BytesIO()
+        img.save(buf, "PNG")
+        buf.seek(0)
+        return buf
+    except Exception as e:
+        logging.getLogger(__name__).error(f"Welcome card error: {e}")
+        return None
+
 
 @Client.on_message(filters.new_chat_members & filters.group)
 async def save_group(bot, message):
@@ -105,7 +247,19 @@ async def save_group(bot, message):
                     InlineKeyboardButton("🤖 Updates", url=CHNL_LNK)
                 ]])
                 try:
-                    await message.reply_text(_rnd2.choice(_rmsgs), reply_markup=_btn, parse_mode=enums.ParseMode.HTML)
+                    try:
+                        _mc2 = await bot.get_chat_members_count(message.chat.id)
+                    except Exception:
+                        _mc2 = 0
+                    _oc = await _make_welcome_card(
+                        bot, _u.id, _u.first_name or "Owner",
+                        message.chat.title, _mc2, is_owner=True
+                    )
+                    _royal_txt = _rnd2.choice(_rmsgs)
+                    if _oc:
+                        await message.reply_photo(photo=_oc, caption=_royal_txt, reply_markup=_btn, parse_mode=enums.ParseMode.HTML)
+                    else:
+                        await message.reply_text(_royal_txt, reply_markup=_btn, parse_mode=enums.ParseMode.HTML)
                 except Exception:
                     pass
     else:
@@ -178,13 +332,33 @@ async def save_group(bot, message):
                     InlineKeyboardButton("🤖 Updates",          url=CHNL_LNK)
                 ]])
                 try:
-                    await message.reply_text(
-                        royal_text,
-                        reply_markup=royal_btn,
-                        parse_mode=enums.ParseMode.HTML
+                    try:
+                        member_count = await bot.get_chat_members_count(message.chat.id)
+                    except Exception:
+                        member_count = 0
+                    owner_card = await _make_welcome_card(
+                        bot, u.id, u.first_name or "Owner",
+                        message.chat.title, member_count, is_owner=True
                     )
-                except Exception:
-                    pass
+                    if owner_card:
+                        await message.reply_photo(
+                            photo=owner_card,
+                            caption=royal_text,
+                            reply_markup=royal_btn,
+                            parse_mode=enums.ParseMode.HTML
+                        )
+                    else:
+                        await message.reply_text(
+                            royal_text,
+                            reply_markup=royal_btn,
+                            parse_mode=enums.ParseMode.HTML
+                        )
+                except Exception as _e:
+                    logging.getLogger(__name__).error(f"Owner welcome error: {_e}")
+                    try:
+                        await message.reply_text(royal_text, reply_markup=royal_btn, parse_mode=enums.ParseMode.HTML)
+                    except Exception:
+                        pass
                 continue   # Normal welcome skip karo admin ke liye
 
             # ── Normal user welcome ─────────────────────────
@@ -198,13 +372,31 @@ async def save_group(bot, message):
                     InlineKeyboardButton('Sᴜᴘᴘᴏʀᴛ Gʀᴏᴜᴘ', url=f'https://t.me/{SUPPORT_CHAT}'),
                     InlineKeyboardButton('Uᴘᴅᴀᴛᴇs Cʜᴀɴɴᴇʟ', url=CHNL_LNK)
                 ],[
+                    InlineKeyboardButton("📥 How to Download", url="https://t.me/asbhai_bsr/671"),
                     InlineKeyboardButton("Bᴏᴛ Oᴡɴᴇʀ", url=OWNER_LNK)
                 ]]
-                temp.MELCOW['welcome'] = await message.reply_text(
-                    text=(script.MELCOW_ENG.format(u.mention, message.chat.title)),
-                    reply_markup=InlineKeyboardMarkup(button),
-                    parse_mode=enums.ParseMode.HTML
+                try:
+                    member_count = await bot.get_chat_members_count(message.chat.id)
+                except Exception:
+                    member_count = 0
+                card = await _make_welcome_card(
+                    bot, u.id, u.first_name or "User",
+                    message.chat.title, member_count, is_owner=False
                 )
+                if card:
+                    temp.MELCOW['welcome'] = await message.reply_photo(
+                        photo=card,
+                        caption=script.MELCOW_ENG.format(u.mention, message.chat.title),
+                        reply_markup=InlineKeyboardMarkup(button),
+                        parse_mode=enums.ParseMode.HTML
+                    )
+                else:
+                    # PIL fail hone pe text fallback
+                    temp.MELCOW['welcome'] = await message.reply_text(
+                        text=script.MELCOW_ENG.format(u.mention, message.chat.title),
+                        reply_markup=InlineKeyboardMarkup(button),
+                        parse_mode=enums.ParseMode.HTML
+                    )
         if settings.get("auto_delete") and (temp.MELCOW).get('welcome'):
             await asyncio.sleep(600)
             try:
