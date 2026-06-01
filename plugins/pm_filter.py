@@ -396,6 +396,7 @@ async def years_cb_handler(client: Client, query: CallbackQuery):
     req = query.from_user.id
     offset = 0
     btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fy#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
 
     try:
         await query.edit_message_reply_markup(
@@ -526,6 +527,7 @@ async def filter_yearss_cb_handler(client: Client, query: CallbackQuery):
         req = query.from_user.id
         offset = 0
         btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fy#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     
     if not settings["button"]:
         cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
@@ -588,6 +590,7 @@ async def episodes_cb_handler(client: Client, query: CallbackQuery):
     req = query.from_user.id
     offset = 0
     btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fe#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
 
     try:
         await query.edit_message_reply_markup(
@@ -692,6 +695,7 @@ async def filter_episodes_cb_handler(client: Client, query: CallbackQuery):
         req = query.from_user.id
         offset = 0
         btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fe#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     
     if not settings["button"]:
         cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
@@ -756,6 +760,7 @@ async def languages_cb_handler(client: Client, query: CallbackQuery):
     req = query.from_user.id
     offset = 0
     btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ​↭", callback_data=f"fl#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
 
     try:
         await query.edit_message_reply_markup(
@@ -860,6 +865,7 @@ async def filter_languages_cb_handler(client: Client, query: CallbackQuery):
         req = query.from_user.id
         offset = 0
         btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fl#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     
     if not settings["button"]:
         cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
@@ -924,6 +930,7 @@ async def seasons_cb_handler(client: Client, query: CallbackQuery):
     req = query.from_user.id
     offset = 0
     btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ​↭", callback_data=f"next_{req}_{key}_{offset}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
 
     try:
         await query.edit_message_reply_markup(
@@ -1036,6 +1043,7 @@ async def filter_seasons_cb_handler(client: Client, query: CallbackQuery):
         req = query.from_user.id
         offset = 0
         btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"next_{req}_{key}_{offset}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     
     if not settings["button"]:
         cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
@@ -1094,6 +1102,7 @@ async def qualities_cb_handler(client: Client, query: CallbackQuery):
     req = query.from_user.id
     offset = 0
     btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"fl#homepage#{key}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
 
     await query.edit_message_reply_markup(InlineKeyboardMarkup(btn))
     
@@ -1195,6 +1204,7 @@ async def filter_qualities_cb_handler(client: Client, query: CallbackQuery):
         req = query.from_user.id
         offset = 0
         btn.append([InlineKeyboardButton(text="↭ ʙᴀᴄᴋ ᴛᴏ ʜᴏᴍᴇ ↭", callback_data=f"next_{req}_{key}_{offset}")])
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     
     if not settings["button"]:
         cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
@@ -2789,6 +2799,7 @@ async def auto_filter(client, name, msg, reply_msg, ai_search, spoll=False):
     except Exception:
         pass
     # ─────────────────────────────────────────────────────────
+    btn.append([InlineKeyboardButton(text="📥 ʜᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ — ᴠɪᴅᴇᴏ ᴅᴇᴋʜᴏ 🎬", url="https://t.me/asbhai_bsr/671")])
     imdb = await get_poster(search, file=(files[0])['file_name']) if settings["imdb"] else None
     cur_time = datetime.now(pytz.timezone('Asia/Kolkata')).time()
     time_difference = timedelta(hours=cur_time.hour, minutes=cur_time.minute, seconds=(cur_time.second+(cur_time.microsecond/1000000))) - timedelta(hours=curr_time.hour, minutes=curr_time.minute, seconds=(curr_time.second+(curr_time.microsecond/1000000)))
