@@ -1414,7 +1414,17 @@ async def premium_users_list_cmd(client, message):
         else:
             time_left = "?"
             exp_str   = "?"
-        lines.append(f"{i}. <code>{uid}</code> — ⏳ {time_left} (exp: {exp_str})")
+        # Try to get user name
+        try:
+            user_obj = await client.get_users(uid)
+            uname = user_obj.first_name or ""
+            if user_obj.last_name:
+                uname += " " + user_obj.last_name
+            uname = uname[:20]
+            mention = f'<a href="tg://user?id={uid}">{uname}</a>'
+        except Exception:
+            mention = f"<code>{uid}</code>"
+        lines.append(f"{i}. {mention} — ⏳ {time_left} (exp: {exp_str})")
 
     # Navigation hint
     if pages > 1:
@@ -1463,7 +1473,17 @@ async def pmu_page_cb(client, query):
             else:
                 time_left = "?"
                 exp_str   = "?"
-            lines.append(f"{i}. <code>{uid}</code> — ⏳ {time_left} (exp: {exp_str})")
+            # Try to get user name
+        try:
+            user_obj = await client.get_users(uid)
+            uname = user_obj.first_name or ""
+            if user_obj.last_name:
+                uname += " " + user_obj.last_name
+            uname = uname[:20]
+            mention = f'<a href="tg://user?id={uid}">{uname}</a>'
+        except Exception:
+            mention = f"<code>{uid}</code>"
+        lines.append(f"{i}. {mention} — ⏳ {time_left} (exp: {exp_str})")
 
         nav_btns = []
         if page > 0:
