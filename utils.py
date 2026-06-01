@@ -105,6 +105,10 @@ BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(
 imdb = Cinemagoer() 
 TOKENS = {}
 VERIFIED = {}
+# Structure: {user_id: {"v1": unix_timestamp, "v2": unix_timestamp_or_0}}
+# v1 = first verify time, v2 = second verify time (12h gap required)
+# Access allowed 24h total: v1 → 12h free → v2 required → 12h free → v1 again
+import time as _time_module
 BANNED = {}
 SECOND_SHORTENER = {}
 SMART_OPEN = '“'
@@ -759,9 +763,34 @@ async def verify_user(bot, userid, token):
         await db.add_user(user.id, user.first_name)
         await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
     TOKENS[user.id] = {token: True}
-    tz = pytz.timezone('Asia/Kolkata')
-    today = date.today()
-    VERIFIED[user.id] = str(today)
+    now_ts = _time_module.time()
+    existing = VERIFIED.get(user.id, {})
+
+    if not isinstance(existing, dict):
+        # Old format — reset
+        existing = {}
+
+    v1 = existing.get("v1", 0)
+    v2 = existing.get("v2", 0)
+
+    if VERIFY_SECOND_SHORTNER:
+        # 12-12 hour loop system
+        # v1 done, v2 pending → save v2
+        if v1 > 0 and (now_ts - v1) >= 43200 and v2 == 0:
+            existing["v2"] = now_ts
+        # Both expired OR fresh user → save v1, reset v2
+        elif v1 == 0 or (v2 > 0 and (now_ts - v2) >= 43200):
+            existing["v1"] = now_ts
+            existing["v2"] = 0
+        # v1 just done, too early for v2
+        elif v1 > 0 and (now_ts - v1) < 43200:
+            existing["v1"] = now_ts
+    else:
+        # Single verify — 24h valid
+        existing["v1"] = now_ts
+        existing["v2"] = 0
+
+    VERIFIED[user.id] = existing
     # Log verify complete to LOG_CHANNEL
     try:
         from datetime import datetime as dt
@@ -784,18 +813,65 @@ async def check_verification(bot, userid):
     if not await db.is_user_exist(user.id):
         await db.add_user(user.id, user.first_name)
         await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
-    tz = pytz.timezone('Asia/Kolkata')
-    today = date.today()
-    if user.id in VERIFIED.keys():
-        EXP = VERIFIED[user.id]
-        years, month, day = EXP.split('-')
-        comp = date(int(years), int(month), int(day))
-        if comp<today:
-            return False
-        else:
-            return True
+
+    now_ts = _time_module.time()
+    data   = VERIFIED.get(user.id)
+
+    if not data:
+        return False
+
+    # Old format (date string) — force re-verify
+    if not isinstance(data, dict):
+        return False
+
+    v1 = data.get("v1", 0)
+    v2 = data.get("v2", 0)
+
+    if not VERIFY_SECOND_SHORTNER:
+        # Single verify: valid 24h from v1
+        return v1 > 0 and (now_ts - v1) < 86400
+
+    # Dual verify: 12-12h loop
+    # Phase 1: v1 done, v2 not yet — valid 12h
+    if v1 > 0 and v2 == 0:
+        return (now_ts - v1) < 43200
+    # Phase 2: both done — valid 12h from v2
+    if v1 > 0 and v2 > 0:
+        return (now_ts - v2) < 43200
+    return False
+
+
+async def get_verify_time_remaining(userid) -> int:
+    """Returns seconds remaining in current verify window (0 if expired)"""
+    now_ts = _time_module.time()
+    data   = VERIFIED.get(userid)
+    if not data or not isinstance(data, dict):
+        return 0
+    v1 = data.get("v1", 0)
+    v2 = data.get("v2", 0)
+    if not VERIFY_SECOND_SHORTNER:
+        rem = 86400 - (now_ts - v1) if v1 > 0 else 0
+    elif v1 > 0 and v2 == 0:
+        rem = 43200 - (now_ts - v1)
+    elif v1 > 0 and v2 > 0:
+        rem = 43200 - (now_ts - v2)
     else:
-        return False  
+        rem = 0
+    return max(0, int(rem))
+
+
+async def needs_second_verify(userid) -> bool:
+    """Check karo ki user ko abhi 2nd shortlink verify karni hai"""
+    if not VERIFY_SECOND_SHORTNER:
+        return False
+    now_ts = _time_module.time()
+    data   = VERIFIED.get(userid)
+    if not data or not isinstance(data, dict):
+        return False
+    v1 = data.get("v1", 0)
+    v2 = data.get("v2", 0)
+    # v1 done, 12h passed, v2 pending
+    return v1 > 0 and v2 == 0 and (now_ts - v1) >= 43200
     
 async def send_all(bot, userid, files, ident, chat_id, user_name, query):
     settings = await get_settings(chat_id)
