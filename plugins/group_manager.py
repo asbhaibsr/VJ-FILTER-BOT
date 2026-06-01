@@ -40,13 +40,16 @@ def _build_page(groups: list, page: int, total_active: int, removed: int):
         title   = g["title"]
         title   = title[:26] + "…" if len(title) > 26 else title
         members = g.get("members", 0)
-        link    = g.get("link", f"https://t.me/c/{str(gid).replace('-100','').lstrip('-')}")
+        link    = g.get("link")   # Real invite link or None
         label   = f"🏘 {i}. {title}"
         if members:
             label += f" ({members})"
-        buttons.append([
-            InlineKeyboardButton(label, url=link)
-        ])
+        if link:
+            # Has real invite link - show clickable button
+            buttons.append([InlineKeyboardButton(label, url=link)])
+        else:
+            # No invite link available - show as non-clickable info
+            buttons.append([InlineKeyboardButton(f"🔒 {i}. {title} (no link)", callback_data="mg_noop")])
 
     # Pagination row
     nav = []
@@ -117,7 +120,16 @@ async def _fetch_groups(bot) -> tuple:
                 except Exception:
                     pass
 
-            # 3rd fallback: t.me/c/ URL (public groups ke liye)
+            # 3rd try: public username
+            if not invite_link:
+                try:
+                    if hasattr(chat_obj, "username") and chat_obj.username:
+                        invite_link = f"https://t.me/{chat_obj.username}"
+                except Exception:
+                    pass
+
+            # 4th fallback: ONLY use t.me/c/ if all above failed
+            # This URL requires user to already be a member - mark it
             if not invite_link:
                 gid_str = str(chat_id)
                 if gid_str.startswith("-100"):
@@ -127,6 +139,8 @@ async def _fetch_groups(bot) -> tuple:
                 else:
                     clean_id = gid_str
                 invite_link = f"https://t.me/c/{clean_id}"
+                # Flag that this is NOT a real invite link
+                invite_link = None   # Skip - no valid link available
 
             active_list.append({
                 "id":     chat_id,
