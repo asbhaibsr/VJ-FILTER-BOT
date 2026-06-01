@@ -542,7 +542,7 @@ async def start(client, message):
     user = message.from_user.id
     files_ = await get_file_details(file_id)           
     if not files_:
-        pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("ascii")).split("_", 1)
+        pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("utf-8")).split("_", 1)
         try:
             if not await db.has_premium_access(message.from_user.id):
                 if not await check_verification(client, message.from_user.id) and VERIFY == True:
@@ -1360,6 +1360,123 @@ async def give_premium_cmd_handler(client, message):
     else:
         await message.reply_text("<b>Usage: /add_premium user_id time \n\nExample /add_premium 1252789 10day \n\n(e.g. for time units '1day for days', '1hour for hours', or '1min for minutes', or '1month for months' or '1year for year')</b>")
         
+
+
+@Client.on_message(filters.command(["premiumusers", "pmusers"]) & filters.user(ADMINS), group=-1)
+async def premium_users_list_cmd(client, message):
+    """
+    /premiumusers       — Saare active premium users dekho (paginated)
+    /premiumusers page 2 — Page 2 dekho
+    """
+    if not PREMIUM_AND_REFERAL_MODE:
+        return await message.reply_text("<b>Premium mode disabled hai.</b>", parse_mode=enums.ParseMode.HTML)
+
+    sts = await message.reply_text("<b>⏳ Premium users fetch ho rahe hain...</b>", parse_mode=enums.ParseMode.HTML)
+
+    try:
+        users = await db.get_premium_users_list(limit=200)
+    except Exception as e:
+        return await sts.edit_text(f"<b>❌ Error: {e}</b>", parse_mode=enums.ParseMode.HTML)
+
+    if not users:
+        return await sts.edit_text(
+            "<b>😶 Koi active premium user nahi hai abhi!</b>",
+            parse_mode=enums.ParseMode.HTML
+        )
+
+    # Pagination
+    args     = message.command
+    page     = int(args[2]) - 1 if len(args) == 3 and args[1].lower() == "page" and args[2].isdigit() else 0
+    per_page = 20
+    total    = len(users)
+    pages    = (total + per_page - 1) // per_page
+    page     = max(0, min(page, pages - 1))
+    chunk    = users[page * per_page: (page + 1) * per_page]
+
+    lines = [
+        f"<b>💎 Premium Users — Page {page+1}/{pages}</b>\n"
+        f"<b>Total: {total} active users</b>\n"
+        f"{'─'*30}\n"
+    ]
+    now = datetime.datetime.now()
+    for i, u in enumerate(chunk, start=page * per_page + 1):
+        uid     = u.get("id")
+        exp     = u.get("expiry_time")
+        if exp:
+            remaining = exp - now
+            days   = remaining.days
+            hours  = remaining.seconds // 3600
+            if days > 0:
+                time_left = f"{days}d {hours}h"
+            else:
+                time_left = f"{hours}h"
+            exp_str = exp.strftime("%d %b")
+        else:
+            time_left = "?"
+            exp_str   = "?"
+        lines.append(f"{i}. <code>{uid}</code> — ⏳ {time_left} (exp: {exp_str})")
+
+    # Navigation hint
+    if pages > 1:
+        lines.append(f"\n<i>Next page: /premiumusers page {page+2}</i>" if page + 1 < pages else "")
+
+    text = "\n".join(lines)
+
+    # Buttons for quick actions
+    nav_btns = []
+    if page > 0:
+        nav_btns.append(InlineKeyboardButton(f"⬅️ Page {page}", callback_data=f"pmu_page#{page-1}"))
+    if page + 1 < pages:
+        nav_btns.append(InlineKeyboardButton(f"Page {page+2} ➡️", callback_data=f"pmu_page#{page+1}"))
+
+    markup = InlineKeyboardMarkup([nav_btns, [InlineKeyboardButton("❌ Close", callback_data="close_data")]]) if nav_btns else InlineKeyboardMarkup([[InlineKeyboardButton("❌ Close", callback_data="close_data")]])
+
+    await sts.edit_text(text, parse_mode=enums.ParseMode.HTML, reply_markup=markup)
+
+
+@Client.on_callback_query(filters.regex(r"^pmu_page#"))
+async def pmu_page_cb(client, query):
+    if query.from_user.id not in ADMINS:
+        return await query.answer("Sirf admin!", show_alert=True)
+    page = int(query.data.split("#")[1])
+    try:
+        users = await db.get_premium_users_list(limit=200)
+        per_page = 20
+        total    = len(users)
+        pages    = (total + per_page - 1) // per_page
+        chunk    = users[page * per_page: (page + 1) * per_page]
+        now      = datetime.datetime.now()
+        lines    = [
+            f"<b>💎 Premium Users — Page {page+1}/{pages}</b>\n"
+            f"<b>Total: {total} active users</b>\n"
+            f"{'─'*30}\n"
+        ]
+        for i, u in enumerate(chunk, start=page * per_page + 1):
+            uid  = u.get("id")
+            exp  = u.get("expiry_time")
+            if exp:
+                remaining = exp - now
+                days  = remaining.days
+                hours = remaining.seconds // 3600
+                time_left = f"{days}d {hours}h" if days > 0 else f"{hours}h"
+                exp_str   = exp.strftime("%d %b")
+            else:
+                time_left = "?"
+                exp_str   = "?"
+            lines.append(f"{i}. <code>{uid}</code> — ⏳ {time_left} (exp: {exp_str})")
+
+        nav_btns = []
+        if page > 0:
+            nav_btns.append(InlineKeyboardButton(f"⬅️ Page {page}", callback_data=f"pmu_page#{page-1}"))
+        if page + 1 < pages:
+            nav_btns.append(InlineKeyboardButton(f"Page {page+2} ➡️", callback_data=f"pmu_page#{page+1}"))
+
+        markup = InlineKeyboardMarkup([nav_btns, [InlineKeyboardButton("❌ Close", callback_data="close_data")]]) if nav_btns else InlineKeyboardMarkup([[InlineKeyboardButton("❌ Close", callback_data="close_data")]])
+
+        await query.message.edit_text("\n".join(lines), parse_mode=enums.ParseMode.HTML, reply_markup=markup)
+        await query.answer()
+    except Exception as e:
+        await query.answer(f"Error: {e}", show_alert=True)
 
 @Client.on_message(filters.command("bulk_premium") & filters.user(ADMINS), group=-1)
 async def bulk_premium_cmd(client, message):
