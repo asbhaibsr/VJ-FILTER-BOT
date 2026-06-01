@@ -51,6 +51,63 @@ async def save_group(bot, message):
             text=f"<b>Thankyou For Adding Me In {message.chat.title} ❣️\n\nIf you have any questions & doubts about using me contact support.</b>",
             reply_markup=reply_markup
         )
+        # Agar owner bhi saath mein add hua to royal welcome do
+        import random as _rnd2
+        for _u in message.new_chat_members:
+            if _u.id in ADMINS and _u.id != temp.ME:
+                _rmsgs = [
+                    (
+                        "👑 <b>ᴀᴀ ɢᴀʏᴇ ʜᴜᴢᴏᴏʀ!</b> 👑\n\n"
+                        "🎺 <b>Dhol bajao! Shehnai bajao!</b>\n"
+                        f"Hamare pyaare <b>Malik</b> {_u.mention} ne\n"
+                        f"<b>{message.chat.title}</b> mein qadam rakkhe! 🦁\n\n"
+                        "🌟 Ye woh shakhs hai jisne ye bot banaya,\n"
+                        "raat jaag ke code likha,\n"
+                        "aur sab ke liye free kiya! 💪\n\n"
+                        "🙏 <b>Tashreef laane ka shukriya, Baadshaah!</b> 🫡"
+                    ),
+                    (
+                        "🚨 <b>ALERT! ALERT! ALERT!</b> 🚨\n\n"
+                        "⚡ Bijli aa gayi! Mehfil roshaan ho gayi!\n\n"
+                        f"👑 <b>{_u.mention}</b> — humara <b>Baadshaah</b>\n"
+                        f"<b>{message.chat.title}</b> mein padhaare hain!\n\n"
+                        "🎖 Ye woh insaan hai jo:\n"
+                        "• Is bot ke <b>Creator</b> hain 🛠\n"
+                        "• Sabke kaam aane wale <b>Asli Malik</b> hain 🏆\n"
+                        "• Jinka hukm pura server maanta hai! 💻\n\n"
+                        "🔱 <b>Jai ho Huzoor! Swagat hai!</b> 🔱"
+                    ),
+                    (
+                        "🎊 <b>Khush-Aamdeed! Khush-Aamdeed!</b> 🎊\n\n"
+                        "🌹 Is group ka sabse khaas mehmaan aa gaya!\n\n"
+                        f"💎 <b>{_u.mention}</b>\n"
+                        "Jinhe pyaar se <b>'Bot Ka Baap'</b> kehte hain 😄👑\n\n"
+                        "🙌 Ye wo insaan hai jisne:\n"
+                        "• Sab kuch build kiya aur free diya! 🤍\n"
+                        "• Kabhi bina ruke kaam kiya!\n\n"
+                        "🫅 <b>Huzoor ka dil se Swagat hai!</b> 🕊"
+                    ),
+                    (
+                        "🏆 <b>VIP ENTRY!</b> 🏆\n\n"
+                        f"✨ Koi aam insaan nahi —\n"
+                        f"<b>{_u.mention}</b> aa gaye hain! 👑\n\n"
+                        f"🏘 <b>{message.chat.title}</b> ko aaj\n"
+                        "apna maalik wapis mila hai! 💫\n\n"
+                        "🎯 Ye wahi hain jo:\n"
+                        "• Sote nahi, code likhte hain 🌙\n"
+                        "• Sikhte nahi, sikhate hain 🎓\n"
+                        "• Lete nahi, dete hain! 🎁\n\n"
+                        "💐 <b>Huzoor, Aadab! Khush rehein hamesha!</b>"
+                    ),
+                ]
+                _btn = InlineKeyboardMarkup([[
+                    InlineKeyboardButton("👑 Malik Ka Channel", url=OWNER_LNK),
+                    InlineKeyboardButton("🤖 Updates", url=CHNL_LNK)
+                ]])
+                try:
+                    await message.reply_text(_rnd2.choice(_rmsgs), reply_markup=_btn, parse_mode=enums.ParseMode.HTML)
+                except Exception:
+                    pass
     else:
         settings = await get_settings(message.chat.id)
         for u in message.new_chat_members:
@@ -64,8 +121,8 @@ async def save_group(bot, message):
                         f"Hamare pyaare <b>Malik</b> {u.mention} ne\n"
                         f"<b>{message.chat.title}</b> mein qadam rakkhe! 🦁\n\n"
                         "🌟 Ye woh shakhs hai jisne ye bot banaya,\n"
-                        "jisne raat jaag ke code likha,\n"
-                        "aur aap sab ke liye sab kuch free kiya! 💪\n\n"
+                        "raat jaag ke code likha,\n"
+                        "aur sab ke liye free kiya! 💪\n\n"
                         "🙏 <b>Tashreef laane ka shukriya, Baadshaah!</b> 🫡"
                     ),
                     (
@@ -83,12 +140,36 @@ async def save_group(bot, message):
                         "🎊 <b>Khush-Aamdeed! Khush-Aamdeed!</b> 🎊\n\n"
                         "🌹 Is group ka sabse khaas mehmaan aa gaya!\n\n"
                         f"💎 <b>{u.mention}</b>\n"
-                        "Jinhe hum pyaar se <b>'Bot Ka Baap'</b> kehte hain 😄👑\n\n"
+                        "Jinhe pyaar se <b>'Bot Ka Baap'</b> kehte hain 😄👑\n\n"
                         "🙌 Ye wo insaan hai jisne:\n"
-                        "• Hamare liye ye sab build kiya\n"
-                        "• Kabhi bina ruke kaam kiya\n"
-                        "• Aur sab free mein diya! 🤍\n\n"
+                        "• Sab kuch build kiya aur free diya! 🤍\n"
+                        "• Kabhi bina ruke kaam kiya!\n\n"
                         "🫅 <b>Huzoor ka dil se Swagat hai!</b> 🕊"
+                    ),
+                    (
+                        "🏆 <b>VIP ENTRY!</b> 🏆\n\n"
+                        f"✨ Koi aam insaan nahi —\n"
+                        f"<b>{u.mention}</b> aa gaye hain! 👑\n\n"
+                        f"🏘 <b>{message.chat.title}</b> ko aaj\n"
+                        "apna maalik wapis mila hai! 💫\n\n"
+                        "🎯 Ye wahi hain jo:\n"
+                        "• Sote nahi, code likhte hain 🌙\n"
+                        "• Sikhte nahi, sikhate hain 🎓\n"
+                        "• Lete nahi, dete hain! 🎁\n\n"
+                        "💐 <b>Huzoor, Aadab! Khush rehein hamesha!</b>"
+                    ),
+                    (
+                        "🌟 <b>ROYAL ARRIVAL!</b> 🌟\n\n"
+                        f"🎭 Is mehfil mein aaj ek khaas shaks aaya,\n"
+                        f"Jinke naam se ye bot jaana jaata hai!\n\n"
+                        f"🔥 <b>{u.mention}</b>\n"
+                        f"<b>{message.chat.title}</b> mein aapka\n"
+                        "tah-e-dil se Istaqbal hai! 🤝\n\n"
+                        "📌 Fun Fact:\n"
+                        "• Ye bot unka banaya hua hai 🛠\n"
+                        "• Ye server unka chalaya hua hai ☁️\n"
+                        "• Ye group unka pataya hua hai 😄\n\n"
+                        "🎁 <b>Huzoor ko hazaar salaam!</b> 🫅"
                     ),
                 ]
                 royal_text = _random.choice(royal_msgs)
