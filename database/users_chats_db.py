@@ -293,6 +293,17 @@ class Database:
         return count
 
 
+    async def get_premium_users_list(self, limit: int = 100):
+        """Saare active premium users ki list return karo"""
+        cursor = self.users.find(
+            {"expiry_time": {"$gt": datetime.datetime.now()}},
+            {"id": 1, "expiry_time": 1, "_id": 0}
+        ).sort("expiry_time", -1).limit(limit)
+        results = []
+        async for u in cursor:
+            results.append(u)
+        return results
+
     # ── REDEEM CODE SYSTEM ──────────────────────────────────────────
     async def save_redeem_code(self, code: str, plan_type: int, duration: str, expiry_hours: int = 48):
         """Save a new redeem code to DB"""
