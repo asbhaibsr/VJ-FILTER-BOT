@@ -187,7 +187,8 @@ async def get_poster(query, bulk=False, id=False, file=None):
                 year = list_to_str(year[:1]) 
         else:
             year = None
-        movieid = imdb.search_movie(title.lower(), results=10)
+        loop = asyncio.get_event_loop()
+        movieid = await loop.run_in_executor(None, lambda: imdb.search_movie(title.lower(), results=10))
         if not movieid:
             return None
         if year:
@@ -204,7 +205,8 @@ async def get_poster(query, bulk=False, id=False, file=None):
         movieid = movieid[0].movieID
     else:
         movieid = query
-    movie = imdb.get_movie(movieid)
+    loop = asyncio.get_event_loop()
+    movie = await loop.run_in_executor(None, lambda: imdb.get_movie(movieid))
     if not movie:
         return None
     if movie.get("original air date"):
