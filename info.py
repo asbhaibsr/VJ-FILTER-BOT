@@ -175,9 +175,9 @@ VERIFY_SHORTLINK_API = environ.get('VERIFY_SHORTLINK_API', '3e053189c26ffbc17fec
 VERIFY_TUTORIAL      = environ.get('VERIFY_TUTORIAL', 'https://t.me/Asbhai_bsr/504')
 
 # Second shortener — agar True karo to dono shorteners se link banta hai (double earn)
-VERIFY_SECOND_SHORTNER  = _bool(environ.get('VERIFY_SECOND_SHORTNER'), default=False)
-VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', '')
-VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', '')
+VERIFY_SECOND_SHORTNER  = _bool(environ.get('VERIFY_SECOND_SHORTNER'), default=True)
+VERIFY_SND_SHORTLINK_URL = environ.get('VERIFY_SND_SHORTLINK_URL', 'arolinks.com')
+VERIFY_SND_SHORTLINK_API = environ.get('VERIFY_SND_SHORTLINK_API', 'e59d9a7076acc80820345129b5634aec2f6c54c6')
 
 # ══════════════════════════════════════════════════════════════
 #   BLOGGER VERIFY SYSTEM (Shortlink ki jagah Blogger post use hogi)
