@@ -1505,23 +1505,52 @@ async def remove_premium_cmd_handler(client, message):
 @Client.on_message(filters.command("myplan"))
 async def check_plans_cmd(client, message):
     if PREMIUM_AND_REFERAL_MODE == False:
-        return 
-    user_id  = message.from_user.id
-    if await db.has_premium_access(user_id):         
-        remaining_time = await db.check_remaining_uasge(user_id)             
-        expiry_time = remaining_time + datetime.datetime.now()
-        await message.reply_text(f"**Your plans details are :\n\nRemaining Time : {remaining_time}\n\nExpirytime : {expiry_time}**")
+        return
+    user_id = message.from_user.id
+    if await db.has_premium_access(user_id):
+        try:
+            remaining_time = await db.check_remaining_usage(user_id)
+            expiry_dt = datetime.datetime.now() + remaining_time
+            days    = remaining_time.days
+            hours   = remaining_time.seconds // 3600
+            minutes = (remaining_time.seconds % 3600) // 60
+            if days > 0:
+                time_str = f"{days} din, {hours} ghante"
+            elif hours > 0:
+                time_str = f"{hours} ghante, {minutes} minute"
+            else:
+                time_str = f"{minutes} minute"
+            exp_str = expiry_dt.strftime("%d %b %Y %I:%M %p")
+            text = (
+                f"<b>👑 Aapka Premium Plan Active Hai!</b>\n\n"
+                f"⏳ <b>Bacha Hua Time:</b> <code>{time_str}</code>\n"
+                f"📅 <b>Expiry Date:</b> <code>{exp_str}</code>\n\n"
+                f"🎬 Direct files aur no ads enjoy karo!\n"
+                f"Renew karne ke liye: /plan"
+            )
+            btn = InlineKeyboardMarkup([[
+                InlineKeyboardButton("💎 Renew Plan", callback_data="buy_premium"),
+                InlineKeyboardButton("❌ Close",       callback_data="close_data")
+            ]])
+            await message.reply_text(text, reply_markup=btn, parse_mode=enums.ParseMode.HTML)
+        except Exception as e:
+            await message.reply_text(
+                "<b>✅ Aapka premium active hai!</b>\n/plan se renew karo.",
+                parse_mode=enums.ParseMode.HTML
+            )
     else:
-        btn = [ 
-            [InlineKeyboardButton("ɢᴇᴛ ғʀᴇᴇ ᴛʀᴀɪʟ ғᴏʀ 𝟻 ᴍɪɴᴜᴛᴇꜱ ☺️", callback_data="get_trail")],
-            [InlineKeyboardButton("ʙᴜʏ sᴜʙsᴄʀɪᴘᴛɪᴏɴ : ʀᴇᴍᴏᴠᴇ ᴀᴅs", callback_data="buy_premium")],
-            [InlineKeyboardButton("⚠️ ᴄʟᴏsᴇ / ᴅᴇʟᴇᴛᴇ ⚠️", callback_data="close_data")]
+        btn = [
+            [InlineKeyboardButton("🆓 Free Trial (5 Min)", callback_data="get_trail")],
+            [InlineKeyboardButton("💎 Premium Plans",      callback_data="buy_premium")],
+            [InlineKeyboardButton("❌ Close",               callback_data="close_data")]
         ]
-        reply_markup = InlineKeyboardMarkup(btn)
-        m=await message.reply_sticker("CAACAgIAAxkBAAIBTGVjQbHuhOiboQsDm35brLGyLQ28AAJ-GgACglXYSXgCrotQHjibHgQ")         
-        await message.reply_text(f"**😢 You Don't Have Any Premium Subscription.\n\n Check Out Our Premium /plan**",reply_markup=reply_markup)
-        await asyncio.sleep(2)
-        await m.delete()
+        await message.reply_text(
+            "<b>😢 Aapke paas koi Premium plan nahi hai!</b>\n\n"
+            "💎 Plans dekhne ke liye: /plan\n"
+            "🆓 Free trial bhi le sakte ho!",
+            reply_markup=InlineKeyboardMarkup(btn),
+            parse_mode=enums.ParseMode.HTML
+        )
 
 # ====================================================================
 #                  PREMIUM & REFERRAL SYSTEM (NEW)
