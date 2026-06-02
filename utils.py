@@ -793,8 +793,10 @@ async def verify_user(bot, userid, token):
     VERIFIED[user.id] = existing
     # Log verify complete to LOG_CHANNEL
     try:
+        import pytz as _pytz
         from datetime import datetime as dt
-        now = dt.now(tz)
+        _tz = _pytz.timezone('Asia/Kolkata')
+        now = dt.now(_tz)
         time_str = now.strftime("%d %b %H:%M IST")
         shortlink_url = VERIFY_SHORTLINK_URL if VERIFY_SHORTLINK_URL else "N/A"
         log_text = (
