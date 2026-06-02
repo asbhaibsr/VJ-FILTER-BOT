@@ -24,7 +24,61 @@ from database.connections_mdb import active_connection, mydb
 # ══════════════════════════════════════════════════════════════
 #   WELCOME CARD GENERATOR (PIL)
 # ══════════════════════════════════════════════════════════════
-_FONT_PATH = "/usr/share/fonts/truetype/liberation/"
+
+# ── Font finder: multiple paths try karo, jo pehle mile wo use karo ──
+def _find_font(bold=True, size=40):
+    """System mein available font dhundo, None pe default return karo."""
+    suffix_bold = [
+        "LiberationSans-Bold.ttf",
+        "DejaVuSans-Bold.ttf",
+        "Ubuntu-B.ttf",
+        "FreeSansBold.ttf",
+        "NotoSans-Bold.ttf",
+    ]
+    suffix_reg = [
+        "LiberationSans-Regular.ttf",
+        "DejaVuSans.ttf",
+        "Ubuntu-R.ttf",
+        "FreeSans.ttf",
+        "NotoSans-Regular.ttf",
+    ]
+    dirs = [
+        "/usr/share/fonts/truetype/liberation/",
+        "/usr/share/fonts/truetype/dejavu/",
+        "/usr/share/fonts/truetype/ubuntu/",
+        "/usr/share/fonts/truetype/freefont/",
+        "/usr/share/fonts/truetype/noto/",
+        "/usr/share/fonts/truetype/",
+        "/usr/share/fonts/",
+    ]
+    candidates = suffix_bold if bold else suffix_reg
+    if not PIL_OK:
+        return None
+    for d in dirs:
+        for f in candidates:
+            p = os.path.join(d, f)
+            if os.path.isfile(p):
+                try:
+                    return ImageFont.truetype(p, size)
+                except Exception:
+                    continue
+    try:
+        return ImageFont.load_default()
+    except Exception:
+        return None
+
+def _safe_text(text, max_len=None):
+    """PIL latin font ke liye safe text — emoji/Unicode ko '?' se replace karo."""
+    result = ""
+    for ch in (text or ""):
+        try:
+            ch.encode("latin-1")
+            result += ch
+        except (UnicodeEncodeError, UnicodeDecodeError):
+            result += "?"
+    if max_len:
+        result = result[:max_len]
+    return result or "?"
 
 async def _make_welcome_card(bot, user_id, first_name, group_title, member_count=0, is_owner=False):
     """PIL se dynamic welcome image banao"""
@@ -65,13 +119,12 @@ async def _make_welcome_card(bot, user_id, first_name, group_title, member_count
         draw.rounded_rectangle([28,28,W-28,H-28], radius=40, outline=border_col, width=3)
 
         # Fonts
-        try:
-            f_big   = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    85 if not is_owner else 78)
-            f_name  = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    56)
-            f_sub   = ImageFont.truetype(_FONT_PATH+"LiberationSans-Regular.ttf", 38)
-            f_badge = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf",    28)
-        except Exception:
-            f_big = f_name = f_sub = f_badge = ImageFont.load_default()
+        f_big   = _find_font(bold=True,  size=85 if not is_owner else 78)
+        f_name  = _find_font(bold=True,  size=56)
+        f_sub   = _find_font(bold=False, size=38)
+        f_badge = _find_font(bold=True,  size=28)
+        f_small = _find_font(bold=False, size=30)
+        f_init  = _find_font(bold=True,  size=130)
 
         # Avatar
         av_img = None
@@ -98,11 +151,7 @@ async def _make_welcome_card(bot, user_id, first_name, group_title, member_count
             av_img = Image.new("RGBA", (AV_SIZE+10, AV_SIZE+10), (0,0,0,0))
             ImageDraw.Draw(av_img).ellipse([0,0,AV_SIZE+9,AV_SIZE+9], fill=av_border+(255,))
             ImageDraw.Draw(av_img).ellipse([5,5,AV_SIZE+4,AV_SIZE+4], fill=(70,50,160,255) if not is_owner else (140,90,10,255))
-            try:
-                f_init = ImageFont.truetype(_FONT_PATH+"LiberationSans-Bold.ttf", 130)
-            except Exception:
-                f_init = ImageFont.load_default()
-            initials = (first_name[0] if first_name else "?").upper()
+            initials = _safe_text(first_name[0] if first_name else "?").upper() or "?"
             bbox = f_init.getbbox(initials)
             ix = (AV_SIZE+10-(bbox[2]-bbox[0]))//2
             iy = (AV_SIZE+10-(bbox[3]-bbox[1]))//2 - 5
@@ -115,29 +164,29 @@ async def _make_welcome_card(bot, user_id, first_name, group_title, member_count
         ty = 80
 
         if is_owner:
-            draw.text((tx, ty), "👑 AA GAYE HUZOOR! 👑", fill=title_col, font=f_sub)
+            draw.text((tx, ty), "AA GAYE HUZOOR!", fill=title_col, font=f_sub)
             ty += 55
-            nm = first_name[:20]
+            nm = _safe_text(first_name, 20)
             draw.text((tx, ty), nm, fill=name_col, font=f_big)
             ty += 100
-            draw.text((tx, ty), (group_title[:30] if len(group_title)<=30 else group_title[:29]+"…"), fill=sub_col, font=f_name)
+            draw.text((tx, ty), _safe_text(group_title, 30), fill=sub_col, font=f_name)
             ty += 68
-            draw.text((tx, ty), "Bot Ka Maalik aa gaya! 🔥", fill=(255,200,80), font=f_sub)
+            draw.text((tx, ty), "Bot Ka Maalik aa gaya!", fill=(255,200,80), font=f_sub)
             ty += 52
         else:
             draw.text((tx, ty), "WELCOME", fill=title_col, font=f_big)
             ty += 100
-            nm = first_name[:22]
+            nm = _safe_text(first_name, 22)
             draw.text((tx, ty), nm, fill=name_col, font=f_name)
             ty += 70
-            draw.text((tx, ty), "to "+( group_title[:28] if len(group_title)<=28 else group_title[:27]+"…"), fill=sub_col, font=f_sub)
+            draw.text((tx, ty), "to "+ _safe_text(group_title, 28), fill=sub_col, font=f_sub)
             ty += 52
-            draw.text((tx, ty), "Bot is now watching over this chat 👁", fill=(160,155,200), font=ImageFont.truetype(_FONT_PATH+"LiberationSans-Regular.ttf", 30) if PIL_OK else f_badge)
+            draw.text((tx, ty), "Bot is now watching over this chat", fill=(160,155,200), font=f_small)
             ty += 50
 
         # Members badge
         if member_count:
-            badge_txt = f"👥  {member_count:,} Members"
+            badge_txt = f"{member_count:,} Members"
             try:
                 bbox = f_badge.getbbox(badge_txt)
                 bw = bbox[2]-bbox[0]+40
