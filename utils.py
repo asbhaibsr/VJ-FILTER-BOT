@@ -571,13 +571,7 @@ def humanbytes(size):
 
 
 async def get_clone_shortlink(link, url, api):
-    try:
-        shortzy = Shortzy(api_key=api, base_site=url)
-        link = await shortzy.convert(link)
-        return link
-    except Exception as e:
-        logger.error(f"Shortlink conversion failed ({url}): {e}")
-        return link
+    return await _direct_shorten(link, url, api)
                            
 async def get_shortlink(chat_id, link):
     settings = await get_settings(chat_id) #fetching settings for group
@@ -605,44 +599,50 @@ async def get_shortlink(chat_id, link):
             logger.error(e)
             return link
     else:
-        try:
-            shortzy = Shortzy(api_key=API, base_site=URL)
-            link = await shortzy.convert(link)
-            return link
-        except Exception as e:
-            logger.error(f"Shortlink conversion failed ({URL}): {e}")
-            return link
-    
+        return await _direct_shorten(link, URL, API)
+
 async def get_tutorial(chat_id):
     settings = await get_settings(chat_id) #fetching settings for group
     return settings['tutorial']
         
-async def get_verify_shorted_link(link, url, api):
-    API = api
-    URL = url
-    if URL == "api.shareus.io":
-        url = f'https://{URL}/easy_api'
-        params = {
-            "key": API,
-            "link": link,
-        }
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
-                    data = await response.text()
-                    return data
-        except Exception as e:
-            logger.error(e)
-            return link
-    else:
-        try:
-            shortzy = Shortzy(api_key=API, base_site=URL)
-            link = await shortzy.convert(link)
-            return link
-        except Exception as e:
-            logger.error(f"Shortlink conversion failed ({URL}): {e}")
-            return link
-        
+async def _direct_shorten(link, url, api, timeout_sec=5):
+    # Direct aiohttp shortlink — Shortzy se fast aur reliable
+    # shortxlinks, aroolink, aur baaki standard providers support karta hai
+    if not url or not api:
+        return link
+    try:
+        if url == 'api.shareus.io':
+            req_url = f'https://{url}/easy_api'
+            params = {'key': api, 'link': link}
+        else:
+            req_url = f'https://{url}/api'
+            params = {'api': api, 'url': link, 'format': 'json'}
+        _timeout = aiohttp.ClientTimeout(total=timeout_sec, connect=3)
+        conn = aiohttp.TCPConnector(ssl=False)
+        async with aiohttp.ClientSession(timeout=_timeout, connector=conn) as session:
+            async with session.get(req_url, params=params) as resp:
+                if url == 'api.shareus.io':
+                    return await resp.text()
+                data = await resp.json(content_type=None)
+                short = (
+                    data.get('shortenedUrl')
+                    or data.get('shortLink')
+                    or data.get('short_link')
+                    or data.get('shortened_url')
+                    or data.get('short')
+                )
+                if short and short.startswith('http'):
+                    return short
+                logger.error(f'Shortlink API bad response ({url}): {data}')
+                return link
+    except Exception as e:
+        logger.error(f'Shortlink conversion failed ({url}): {e}')
+        return link
+
+
+async def get_verify_shorted_link(link, url, api, timeout_sec=5):
+    # Verify shortlink — original link return karo agar timeout ho
+    return await _direct_shorten(link, url, api, timeout_sec=timeout_sec)
 async def check_token(bot, userid, token):
     user = await bot.get_users(userid)
     if not await db.is_user_exist(user.id):
@@ -748,11 +748,21 @@ async def get_token(bot, userid, link):
         })
         final_url = f"{blogger_post_url}{sep}{params}"
         return str(final_url)
-    # ── NORMAL SHORTLINK MODE (purana tarika, unchanged) ────────────────
-    link = f"{link}verify-{user.id}-{token}"
-    shortened_verify_url = await get_verify_shorted_link(link, VERIFY_SHORTLINK_URL, VERIFY_SHORTLINK_API)
-    if VERIFY_SECOND_SHORTNER == True:
-        snd_link = await get_verify_shorted_link(shortened_verify_url, VERIFY_SND_SHORTLINK_URL, VERIFY_SND_SHORTLINK_API)
+    # -- NORMAL SHORTLINK MODE --
+    raw_link = f"{link}verify-{user.id}-{token}"
+
+    # Step 1: Primary shortlink try karo
+    shortened_verify_url = await get_verify_shorted_link(raw_link, VERIFY_SHORTLINK_URL, VERIFY_SHORTLINK_API)
+    primary_failed = (shortened_verify_url == raw_link)
+
+    if VERIFY_SECOND_SHORTNER:
+        if primary_failed:
+            # Primary down - secondary pe directly try karo
+            logger.warning(f"Primary shortlink ({VERIFY_SHORTLINK_URL}) failed, trying secondary ({VERIFY_SND_SHORTLINK_URL})")
+            snd_link = await get_verify_shorted_link(raw_link, VERIFY_SND_SHORTLINK_URL, VERIFY_SND_SHORTLINK_API)
+        else:
+            # Dono shortlinks double-wrap karo
+            snd_link = await get_verify_shorted_link(shortened_verify_url, VERIFY_SND_SHORTLINK_URL, VERIFY_SND_SHORTLINK_API)
         return str(snd_link)
     else:
         return str(shortened_verify_url)
